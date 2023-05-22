@@ -1,6 +1,13 @@
 #include <sfml/Graphics.hpp>
 
-void Update(sf::RenderWindow& window, sf::CircleShape& shape, sf::Event& event, bool& upPressed, bool& downPressed, bool& leftPressed, bool& rightPressed, int& posX, int& posY, const int& PLAYER_SPEED);
+struct AnimFlags {
+    bool upPressed = false;
+    bool downPressed = false;
+    bool leftPressed = false;
+    bool rightPressed = false;
+};
+
+void Update(sf::RenderWindow& window, sf::CircleShape& shape, sf::Event& event, AnimFlags& animFlags, sf::Vector2f& position, const int& PLAYER_SPEED, const float& deltaTime);
 void Render(sf::RenderWindow& window, sf::CircleShape& shape);
 
 int main()
@@ -9,22 +16,19 @@ int main()
     window.setVerticalSyncEnabled(true);
     window.setKeyRepeatEnabled(true);
 
-    bool upPressed = false;
-    bool downPressed = false;
-    bool leftPressed = false;
-    bool rightPressed = false;
+    const int PLAYER_SPEED = 1;
+    sf::Vector2f position;
 
-    const int PLAYER_SPEED = 5;
-
-    int posX = window.getSize().x / 2.;
-    int posY = window.getSize().y / 2.;
+    AnimFlags animFlags;
+    position.x = window.getSize().x * .5f;
+    position.y = window.getSize().y * .5f;
 
     sf::CircleShape shape(20.f);
     shape.setFillColor(sf::Color::Green);
     sf::FloatRect spriteSize = shape.getGlobalBounds();
-    shape.setOrigin(spriteSize.width / 2., spriteSize.height / 2.);
+    shape.setOrigin(spriteSize.width * .5f, spriteSize.height * .5f);
 
-    //sf::Clock timer;
+    sf::Clock timer;
     while (window.isOpen())
     {
         sf::Event event;
@@ -32,27 +36,29 @@ int main()
             if (event.type == sf::Event::Closed)
                 window.close();
         }
-        Update(window, shape, event, upPressed, downPressed, leftPressed, rightPressed, posX, posY, PLAYER_SPEED);
+
+        float deltaTime = timer.restart().asMilliseconds();
+        Update(window, shape, event, animFlags, position, PLAYER_SPEED, deltaTime);
         Render(window, shape);
     }
 
     return 0;
 }
 
-void Update(sf::RenderWindow& window, sf::CircleShape& shape, sf::Event& event, bool& upPressed, bool& downPressed, bool& leftPressed, bool& rightPressed, int& posX, int& posY,const int& PLAYER_SPEED ) {
+void Update(sf::RenderWindow& window, sf::CircleShape& shape, sf::Event& event, AnimFlags& animFlags, sf::Vector2f& position,const int& PLAYER_SPEED, const float& deltaTime) {
     if (event.type == sf::Event::KeyPressed) {
         switch (event.key.code) {
         case sf::Keyboard::Up:
-            upPressed = true;
+            animFlags.upPressed = true;
             break;
         case sf::Keyboard::Down:
-            downPressed = true;
+            animFlags.downPressed = true;
             break;
         case sf::Keyboard::Left:
-            leftPressed = true;
+            animFlags.leftPressed = true;
             break;
         case sf::Keyboard::Right:
-            rightPressed = true;
+            animFlags.rightPressed = true;
             break;
         default:
             break;
@@ -62,49 +68,49 @@ void Update(sf::RenderWindow& window, sf::CircleShape& shape, sf::Event& event, 
     if (event.type == sf::Event::KeyReleased) {
         switch (event.key.code) {
         case sf::Keyboard::Up:
-            upPressed = false;
+            animFlags.upPressed = false;
             break;
         case sf::Keyboard::Down:
-            downPressed = false;
+            animFlags.downPressed = false;
             break;
         case sf::Keyboard::Left:
-            leftPressed = false;
+            animFlags.leftPressed = false;
             break;
         case sf::Keyboard::Right:
-            rightPressed = false;
+            animFlags.rightPressed = false;
             break;
         default:
             break;
         }
     }
 
-    if (upPressed) {
-        posY -= PLAYER_SPEED;
+    if (animFlags.upPressed) {
+        position.y -= PLAYER_SPEED * deltaTime;
     }
-    if (downPressed) {
-        posY += PLAYER_SPEED;
+    if (animFlags.downPressed) {
+        position.y += PLAYER_SPEED * deltaTime;
     }
-    if (rightPressed) {
-        posX += PLAYER_SPEED;
+    if (animFlags.leftPressed) {
+        position.x -= PLAYER_SPEED * deltaTime;
     }
-    if (leftPressed) {
-        posX -= PLAYER_SPEED;
-    }
-
-    if (posX < 0) {
-        posX = window.getSize().x;
-    }
-    if (posX > (int)window.getSize().x) {
-        posX = 0;
-    }
-    if (posY < 0) {
-        posY = window.getSize().y;
-    }
-    if (posY > (int)window.getSize().y) {
-        posY = 0;
+    if (animFlags.rightPressed) {
+        position.x += PLAYER_SPEED * deltaTime;
     }
 
-    shape.setPosition(posX, posY);
+    if (position.x < 0) {
+        position.x = window.getSize().x;
+    }
+    if (position.x > (int)window.getSize().x) {
+        position.x = 0;
+    }
+    if (position.y < 0) {
+        position.y = window.getSize().y;
+    }
+    if (position.y > (int)window.getSize().y) {
+        position.y = 0;
+    }
+
+    shape.setPosition(position);
 }
 
 void Render(sf::RenderWindow& window, sf::CircleShape& shape) {

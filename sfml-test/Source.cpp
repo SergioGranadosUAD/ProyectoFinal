@@ -1,4 +1,5 @@
 #include <sfml/Graphics.hpp>
+#include <math.h>
 
 struct AnimFlags {
     bool upPressed = false;
@@ -7,8 +8,8 @@ struct AnimFlags {
     bool rightPressed = false;
 };
 
-void Update(sf::RenderWindow& window, sf::CircleShape& shape, sf::Event& event, AnimFlags& animFlags, sf::Vector2f& position, const int& PLAYER_SPEED, const float& deltaTime);
-void Render(sf::RenderWindow& window, sf::CircleShape& shape);
+void Update(sf::RenderWindow& window, sf::RectangleShape& shape, sf::CircleShape& cursor, sf::Event& event, AnimFlags& animFlags, sf::Vector2f& shapePos, sf::Vector2i& cursorPos, const int& PLAYER_SPEED, const float& deltaTime);
+void Render(sf::RenderWindow& window, sf::RectangleShape& shape, sf::CircleShape& cursor);
 
 int main()
 {
@@ -16,17 +17,28 @@ int main()
     window.setVerticalSyncEnabled(true);
     window.setKeyRepeatEnabled(true);
 
-    const int PLAYER_SPEED = 1;
-    sf::Vector2f position;
+    const int PLAYER_SPEED = 500;
+    sf::Vector2f shapePos;
+    sf::Vector2i cursorPos;
 
     AnimFlags animFlags;
-    position.x = window.getSize().x * .5f;
-    position.y = window.getSize().y * .5f;
+    shapePos.x = window.getSize().x * .5f;
+    shapePos.y = window.getSize().y * .5f;
 
-    sf::CircleShape shape(20.f);
+    cursorPos.x = window.getSize().x * .5f;
+    cursorPos.y = window.getSize().y * .5f;
+
+    sf::Vector2f rectangleSize{40.f,30.f};
+
+    sf::RectangleShape shape(rectangleSize);
     shape.setFillColor(sf::Color::Green);
     sf::FloatRect spriteSize = shape.getGlobalBounds();
     shape.setOrigin(spriteSize.width * .5f, spriteSize.height * .5f);
+
+    sf::CircleShape cursor(5.f);
+    cursor.setFillColor(sf::Color::Red);
+    sf::FloatRect cursorSize = cursor.getGlobalBounds();
+    cursor.setOrigin(cursorSize.width * .5f, cursorSize.height * .5f);
 
     sf::Clock timer;
     while (window.isOpen())
@@ -35,17 +47,16 @@ int main()
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
+            float deltaTime = timer.restart().asSeconds();
+            Update(window, shape, cursor, event, animFlags, shapePos, cursorPos, PLAYER_SPEED, deltaTime);
+            Render(window, shape, cursor);
         }
-
-        float deltaTime = timer.restart().asMilliseconds();
-        Update(window, shape, event, animFlags, position, PLAYER_SPEED, deltaTime);
-        Render(window, shape);
     }
 
     return 0;
 }
 
-void Update(sf::RenderWindow& window, sf::CircleShape& shape, sf::Event& event, AnimFlags& animFlags, sf::Vector2f& position,const int& PLAYER_SPEED, const float& deltaTime) {
+void Update(sf::RenderWindow& window, sf::RectangleShape& shape, sf::CircleShape& cursor, sf::Event& event, AnimFlags& animFlags, sf::Vector2f& shapePos, sf::Vector2i& cursorPos,const int& PLAYER_SPEED, const float& deltaTime) {
     if (event.type == sf::Event::KeyPressed) {
         switch (event.key.code) {
         case sf::Keyboard::Up:
@@ -85,36 +96,42 @@ void Update(sf::RenderWindow& window, sf::CircleShape& shape, sf::Event& event, 
     }
 
     if (animFlags.upPressed) {
-        position.y -= PLAYER_SPEED * deltaTime;
+        shapePos.y -= PLAYER_SPEED * deltaTime;
     }
     if (animFlags.downPressed) {
-        position.y += PLAYER_SPEED * deltaTime;
+        shapePos.y += PLAYER_SPEED * deltaTime;
     }
     if (animFlags.leftPressed) {
-        position.x -= PLAYER_SPEED * deltaTime;
+        shapePos.x -= PLAYER_SPEED * deltaTime;
     }
     if (animFlags.rightPressed) {
-        position.x += PLAYER_SPEED * deltaTime;
+        shapePos.x += PLAYER_SPEED * deltaTime;
     }
 
-    if (position.x < 0) {
-        position.x = window.getSize().x;
+    if (shapePos.x < 0) {
+        shapePos.x = window.getSize().x;
     }
-    if (position.x > (int)window.getSize().x) {
-        position.x = 0;
+    if (shapePos.x > (int)window.getSize().x) {
+        shapePos.x = 0;
     }
-    if (position.y < 0) {
-        position.y = window.getSize().y;
+    if (shapePos.y < 0) {
+        shapePos.y = window.getSize().y;
     }
-    if (position.y > (int)window.getSize().y) {
-        position.y = 0;
+    if (shapePos.y > (int)window.getSize().y) {
+        shapePos.y = 0;
     }
+    
+    cursorPos = sf::Mouse::getPosition(window);
+    sf::Vector2f cursorFloatPos = window.mapPixelToCoords(cursorPos);
 
-    shape.setPosition(position);
+    cursor.setPosition(cursorFloatPos);
+    shape.setPosition(shapePos);
+    shape.setRotation(atan2f(cursorFloatPos.y - shapePos.y, cursorFloatPos.x - shapePos.x) * (180 / 3.1416));
 }
 
-void Render(sf::RenderWindow& window, sf::CircleShape& shape) {
+void Render(sf::RenderWindow& window, sf::RectangleShape& shape, sf::CircleShape& cursor) {
     window.clear();
     window.draw(shape);
+    window.draw(cursor);
     window.display();
 }

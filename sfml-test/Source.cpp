@@ -1,5 +1,9 @@
 #include <sfml/Graphics.hpp>
 #include <math.h>
+#include <iostream>
+
+const int PLAYER_SPEED = 500;
+const float PI = 3.1416;
 
 struct AnimFlags {
     bool upPressed = false;
@@ -15,9 +19,8 @@ int main()
 {
     sf::RenderWindow window(sf::VideoMode(800, 600), "Game loop test");
     window.setVerticalSyncEnabled(true);
-    window.setKeyRepeatEnabled(true);
+    //window.setKeyRepeatEnabled(true);
 
-    const int PLAYER_SPEED = 500;
     sf::Vector2f shapePos;
     sf::Vector2i cursorPos;
 
@@ -58,17 +61,18 @@ int main()
 
 void Update(sf::RenderWindow& window, sf::RectangleShape& shape, sf::CircleShape& cursor, sf::Event& event, AnimFlags& animFlags, sf::Vector2f& shapePos, sf::Vector2i& cursorPos,const int& PLAYER_SPEED, const float& deltaTime) {
     if (event.type == sf::Event::KeyPressed) {
+        std::cout << "Key pressed." << std::endl;
         switch (event.key.code) {
-        case sf::Keyboard::Up:
+        case sf::Keyboard::W:
             animFlags.upPressed = true;
             break;
-        case sf::Keyboard::Down:
+        case sf::Keyboard::S:
             animFlags.downPressed = true;
             break;
-        case sf::Keyboard::Left:
+        case sf::Keyboard::A:
             animFlags.leftPressed = true;
             break;
-        case sf::Keyboard::Right:
+        case sf::Keyboard::D:
             animFlags.rightPressed = true;
             break;
         default:
@@ -77,17 +81,18 @@ void Update(sf::RenderWindow& window, sf::RectangleShape& shape, sf::CircleShape
     }
 
     if (event.type == sf::Event::KeyReleased) {
+        std::cout << "Key released." << std::endl;
         switch (event.key.code) {
-        case sf::Keyboard::Up:
+        case sf::Keyboard::W:
             animFlags.upPressed = false;
             break;
-        case sf::Keyboard::Down:
+        case sf::Keyboard::S:
             animFlags.downPressed = false;
             break;
-        case sf::Keyboard::Left:
+        case sf::Keyboard::A:
             animFlags.leftPressed = false;
             break;
-        case sf::Keyboard::Right:
+        case sf::Keyboard::D:
             animFlags.rightPressed = false;
             break;
         default:
@@ -97,15 +102,19 @@ void Update(sf::RenderWindow& window, sf::RectangleShape& shape, sf::CircleShape
 
     if (animFlags.upPressed) {
         shapePos.y -= PLAYER_SPEED * deltaTime;
+        std::cout << "shape Y coord: " << shapePos.y << std::endl;
     }
     if (animFlags.downPressed) {
         shapePos.y += PLAYER_SPEED * deltaTime;
+        std::cout << "shape Y coord: " << shapePos.y << std::endl;
     }
     if (animFlags.leftPressed) {
         shapePos.x -= PLAYER_SPEED * deltaTime;
+        std::cout << "shape X coord: " << shapePos.x << std::endl;
     }
     if (animFlags.rightPressed) {
         shapePos.x += PLAYER_SPEED * deltaTime;
+        std::cout << "shape X coord: " << shapePos.x << std::endl;
     }
 
     if (shapePos.x < 0) {
@@ -126,7 +135,7 @@ void Update(sf::RenderWindow& window, sf::RectangleShape& shape, sf::CircleShape
 
     cursor.setPosition(cursorFloatPos);
     shape.setPosition(shapePos);
-    shape.setRotation(atan2f(cursorFloatPos.y - shapePos.y, cursorFloatPos.x - shapePos.x) * (180 / 3.1416));
+    shape.setRotation(atan2f(cursorFloatPos.y - shapePos.y, cursorFloatPos.x - shapePos.x) * (180 / PI));
 }
 
 void Render(sf::RenderWindow& window, sf::RectangleShape& shape, sf::CircleShape& cursor) {

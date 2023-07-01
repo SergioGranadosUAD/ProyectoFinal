@@ -29,16 +29,8 @@ void Window::Destroy() {
 	mWindow.close();
 }
 
-void Window::Update() {
-	sf::Event event;
-	while (mWindow.pollEvent(event)) {
-		if (event.type == sf::Event::Closed) {
-			mIsDone = true;
-		}
-		else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::F5) {
-			ToggleFullscreen();
-		}
-	}
+void Window::FinishWindow() {
+	mIsDone = true;
 }
 
 void Window::ToggleFullscreen() {

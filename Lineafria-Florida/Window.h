@@ -11,15 +11,16 @@ public:
 	void BeginDraw();
 	void EndDraw();
 
-	void Update();
-
 	bool IsDone();
+	void FinishWindow();
 	bool IsFullscreen();
 	sf::Vector2u GetWindowSize();
 
 	void ToggleFullscreen();
 
 	void Draw(sf::Drawable& mDrawable);
+
+	inline sf::RenderWindow* GetMWindow() { return &mWindow; }
 private:
 	void Setup(const std::string& mTitle, const sf::Vector2u& mSize);
 	void Destroy();

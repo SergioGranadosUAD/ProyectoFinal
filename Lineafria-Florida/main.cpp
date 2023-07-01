@@ -1,8 +1,11 @@
 #include "Game.h"
+#include <memory>
 
-void main() {
-	Game gameLoop;
-	while (!gameLoop.GetWindow()->IsDone()) {
-
+int main() {
+	std::unique_ptr<Game> gameLoop(new Game);
+	while (!gameLoop.get()->GetWindow()->IsDone()) {
+		gameLoop->HandleInput();
+		gameLoop->Update();
+		gameLoop->Render();
 	}
 }

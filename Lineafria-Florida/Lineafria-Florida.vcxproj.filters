@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Archivos de recursos\Sprites">
+      <UniqueIdentifier>{ce15f639-098a-4cde-a0dd-bd8125206546}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -27,6 +30,12 @@
     <ClCompile Include="Entity.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="Bullet.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -38,5 +47,25 @@
     <ClInclude Include="Entity.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="Bullet.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resources\PlayerAim1.png">
+      <Filter>Archivos de recursos\Sprites</Filter>
+    </Image>
+    <Image Include="Resources\PlayerAim2.png">
+      <Filter>Archivos de recursos\Sprites</Filter>
+    </Image>
+    <Image Include="Resources\PlayerDeath.png">
+      <Filter>Archivos de recursos\Sprites</Filter>
+    </Image>
+    <Image Include="Resources\Projectiles.png">
+      <Filter>Archivos de recursos\Sprites</Filter>
+    </Image>
   </ItemGroup>
 </Project>

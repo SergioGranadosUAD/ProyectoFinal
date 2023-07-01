@@ -2,21 +2,21 @@
 #include <vector>
 
 Game::Game() :
-	mWindow("Game Window", sf::Vector2u(800, 600)), mPlayer(mWindow.GetMWindow()) {
-	mWindow.GetMWindow()->setVerticalSyncEnabled(true);
-    mWindow.GetMWindow()->setKeyRepeatEnabled(false);
+	mWindow(new Window("Game Window", sf::Vector2u(800, 600))), mPlayer(new Player(mWindow.get()->GetMWindow())) {
+	mWindow.get()->GetMWindow()->setVerticalSyncEnabled(true);
+    mWindow.get()->GetMWindow()->setKeyRepeatEnabled(false);
 };
 
 Game::~Game(){}
 
 void Game::HandleInput(){
 	sf::Event event;
-	while (mWindow.GetMWindow()->pollEvent(event)) {
+	while (mWindow.get()->GetMWindow()->pollEvent(event)) {
 		if (event.type == sf::Event::Closed) {
-			mWindow.FinishWindow();
+			mWindow.get()->FinishWindow();
 		}
 		if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::F5) {
-			mWindow.ToggleFullscreen();
+			mWindow.get()->ToggleFullscreen();
 		}
 
         if (event.type == sf::Event::KeyPressed) {
@@ -64,42 +64,42 @@ void Game::HandleInput(){
 
         if (event.type == sf::Event::MouseButtonPressed) {
             if (event.mouseButton.button == sf::Mouse::Left) {
-                Bullet* bullet = new Bullet(mWindow.GetMWindow(), mPlayer.GetPosition(), mPlayer.GetSprite()->getRotation());
+                std::shared_ptr<Bullet> bullet(new Bullet(mWindow.get()->GetMWindow(), mPlayer.get()->GetPosition(), mPlayer.get()->GetSprite()->getRotation()));
                 projectiles.push_back(bullet);
             }
         }
 	}
 
     if (animFlags.upPressed) {
-        mPlayer.MoveObject(sf::Vector2f(0.f, -mPlayer.GetSpeed() * mElapsed));
+        mPlayer.get()->MoveObject(sf::Vector2f(0.f, -mPlayer.get()->GetSpeed() * mElapsed));
         // std::cout << "shape Y coord: " << mPlayer.GetPosition().y << std::endl;
     }
     if (animFlags.downPressed) {
-        mPlayer.MoveObject(sf::Vector2f(0.f, mPlayer.GetSpeed() * mElapsed));
+        mPlayer.get()->MoveObject(sf::Vector2f(0.f, mPlayer.get()->GetSpeed() * mElapsed));
         //std::cout << "shape Y coord: " << mPlayer.GetPosition().y << std::endl;
     }
     if (animFlags.leftPressed) {
-        mPlayer.MoveObject(sf::Vector2f(-mPlayer.GetSpeed() * mElapsed, 0.f));
+        mPlayer.get()->MoveObject(sf::Vector2f(-mPlayer.get()->GetSpeed() * mElapsed, 0.f));
         //std::cout << "shape X coord: " << mPlayer.GetPosition().x << std::endl;
     }
     if (animFlags.rightPressed) {
-        mPlayer.MoveObject(sf::Vector2f(mPlayer.GetSpeed() * mElapsed, 0.f));
+        mPlayer.get()->MoveObject(sf::Vector2f(mPlayer.get()->GetSpeed() * mElapsed, 0.f));
         //std::cout << "shape X coord: " << mPlayer.GetPosition().x << std::endl;
     }
 }
 
 void Game::Update() {
-    mPlayer.Update(mWindow.GetMWindow(), mElapsed);
-    for (Bullet* bullet : projectiles) {
-        bullet->Update(mWindow.GetMWindow(), mElapsed);
+    mPlayer.get()->Update(mWindow.get()->GetMWindow(), mElapsed);
+    for (auto bullet : projectiles) {
+        bullet->Update(mWindow.get()->GetMWindow(), mElapsed);
     }
 
-    sf::View view = mWindow.GetMWindow()->getView();
+    sf::View view = mWindow.get()->GetMWindow()->getView();
     sf::FloatRect viewRect(view.getCenter() - view.getSize() / 2.f, view.getSize());
 
     for (int i = 0; i < projectiles.size(); ++i) {
         if (!(viewRect.contains(projectiles[i]->GetPosition()))) {
-            delete projectiles[i];
+            std::cout << "Shared count" << projectiles[i].use_count() << std::endl;
             projectiles.erase(projectiles.begin() + i);
             std::cout << "Projectile deleted" << std::endl;
         }
@@ -109,12 +109,12 @@ void Game::Update() {
 }
 
 void Game::Render() {
-	mWindow.BeginDraw();
-	mWindow.Draw(*mPlayer.GetSprite());
-    for (Bullet* bullet : projectiles) {
-        mWindow.Draw(*bullet->GetSprite());
+	mWindow.get()->BeginDraw();
+	mWindow.get()->Draw(*mPlayer.get()->GetSprite());
+    for (auto bullet : projectiles) {
+        mWindow.get()->Draw(*bullet->GetSprite());
     }
-	mWindow.EndDraw();
+	mWindow.get()->EndDraw();
 }
 
 void Game::RestartClock() {
@@ -127,5 +127,5 @@ float Game::GetElapsed() {
 }
 
 Window* Game::GetWindow() {
-	return &mWindow;
+	return mWindow.get();
 }

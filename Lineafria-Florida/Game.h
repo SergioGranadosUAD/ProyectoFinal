@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include "Window.h"
 #include "Player.h"
 #include "Bullet.h"
@@ -24,10 +25,10 @@ public:
 	Window* GetWindow();
 
 private:
-	Window mWindow;
-	Player mPlayer;
+	std::unique_ptr<Window> mWindow;
+	std::unique_ptr<Player> mPlayer;
 	sf::Clock mClock;
 	float mElapsed;
 	AnimFlags animFlags;
-	std::vector<Bullet*> projectiles;
+	std::vector<std::shared_ptr<Bullet>> projectiles;
 };

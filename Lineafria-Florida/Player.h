@@ -12,7 +12,9 @@ public:
 	void SetHealth(int hp);
 	void TakeDamage(int damage);
 	void CheckPlayerBounds(sf::RenderWindow* window);
+
 	void Update(sf::RenderWindow* window, const float& mElapsed);
+	void Update(sf::RenderWindow* window, const float& mElapsed, sf::Vector2f playerPos);
 
 	inline sf::Sprite* GetSprite() { return &mSprite; }
 	inline sf::Vector2f GetPosition() { return mPosition; }

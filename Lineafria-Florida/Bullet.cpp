@@ -23,6 +23,11 @@ void Bullet::Update(sf::RenderWindow* window, const float& mElapsed) {
 	this->MoveObject(direction);
 }
 
+//Unused
+void Bullet::Update(sf::RenderWindow* window, const float& mElapsed, sf::Vector2f playerPos) {
+
+}
+
 void Bullet::MoveObject(sf::Vector2f pos) {
 	mSprite.move(pos);
 	mPosition = mSprite.getPosition();

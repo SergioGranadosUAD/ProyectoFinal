@@ -5,8 +5,14 @@ Game::Game() :
 	mWindow.get()->GetMWindow()->setVerticalSyncEnabled(true);
     mWindow.get()->GetMWindow()->setKeyRepeatEnabled(false);
 
-    std::shared_ptr<Enemy> enemyPtr(new Enemy(mWindow.get()->GetMWindow(), sf::Vector2f(100, 100)));
+    std::shared_ptr<Enemy> enemyPtr(new Enemy(mWindow.get()->GetMWindow(), sf::Vector2f(100, 100), ENEMY_TYPE(CHASER)));
     enemies.push_back(enemyPtr);
+
+    std::shared_ptr<Enemy> enemyPtr2(new Enemy(mWindow.get()->GetMWindow(), sf::Vector2f(400, 100), ENEMY_TYPE(CHASER)));
+    enemies.push_back(enemyPtr2);
+
+    std::shared_ptr<Enemy> enemyPtr3(new Enemy(mWindow.get()->GetMWindow(), sf::Vector2f(700, 100), ENEMY_TYPE(CHASER)));
+    enemies.push_back(enemyPtr3);
 };
 
 Game::~Game(){}
@@ -95,6 +101,15 @@ void Game::Update() {
     for (auto bullet : projectiles) {
         bullet->Update(mWindow.get()->GetMWindow(), mElapsed);
     }
+    for (auto enemy : enemies) {
+        enemy->Update(mWindow.get()->GetMWindow(), mElapsed, mPlayer.get()->GetPosition());
+
+        if (enemy->GetSprite()->getGlobalBounds().intersects(mPlayer.get()->GetSprite()->getGlobalBounds()) && enemy->GetCooldownTime() > 2000) {
+            std::cout << "Melee attack on player." << std::endl;
+            mPlayer.get()->TakeDamage(20);
+            enemy->RestartCooldown();
+        }
+    }
 
     sf::View view = mWindow.get()->GetMWindow()->getView();
     sf::FloatRect viewRect(view.getCenter() - view.getSize() / 2.f, view.getSize());
@@ -112,16 +127,12 @@ void Game::Update() {
             if (projectiles[i].get()->GetSprite()->getGlobalBounds().intersects(mPlayer.get()->GetSprite()->getGlobalBounds()) && projectiles[i].get()->GetID() == BULLET_ID::ENEMY) {
                 projectiles.erase(projectiles.begin() + i);
                 mPlayer.get()->TakeDamage(20);
-                if (mPlayer.get()->GetHealth() <= 0) {
-                    std::cout << "Player death." << std::endl;
-                    RestartGame();
-                }
                 break;
             }
 
             //Se comprueba si el proyectil es del jugador y colisiona con un enemigo.
             for (int k = 0; k < enemies.size(); ++k) {
-                if (projectiles[i].get()->GetSprite()->getGlobalBounds().intersects(enemies[k].get()->GetHitbox()) && projectiles[i].get()->GetID() == BULLET_ID::ALLIED) {
+                if (projectiles[i].get()->GetSprite()->getGlobalBounds().intersects(enemies[k].get()->GetSprite()->getGlobalBounds()) && projectiles[i].get()->GetID() == BULLET_ID::ALLIED) {
                     projectiles.erase(projectiles.begin() + i);
                     enemies[k].get()->TakeDamage(20);
                     if (enemies[k].get()->GetHealth() <= 0) {
@@ -135,9 +146,13 @@ void Game::Update() {
 
     }
     
+    if (mPlayer.get()->GetHealth() <= 0) {
+        std::cout << "Player death." << std::endl;
+        RestartGame();
+    }
 
     //Test section
-    if (timer2s < 120) {
+    /*if (timer2s < 120) {
         ++timer2s;
     }
     else {
@@ -145,7 +160,7 @@ void Game::Update() {
         projectiles.push_back(bullet);
         timer2s = 0;
     }
-
+    */
 	RestartClock();
 }
 
@@ -153,10 +168,10 @@ void Game::Render() {
 	mWindow.get()->BeginDraw();
 	mWindow.get()->Draw(*mPlayer.get()->GetSprite());
     for (auto bullet : projectiles) {
-        mWindow.get()->Draw(*bullet->GetSprite());
+        mWindow.get()->Draw(*bullet.get()->GetSprite());
     }
     for (auto enemy : enemies) {
-        mWindow.get()->Draw(*enemy->GetSprite());
+        mWindow.get()->Draw(*enemy.get()->GetSprite());
     }
 	mWindow.get()->EndDraw();
 }

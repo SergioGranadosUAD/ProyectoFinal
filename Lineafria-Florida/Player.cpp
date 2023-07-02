@@ -25,6 +25,10 @@ void Player::Update(sf::RenderWindow* window, const float& mElapsed) {
 
 }
 
+void Player::Update(sf::RenderWindow* window, const float& mElapsed, sf::Vector2f playerPos) {
+
+}
+
 void Player::MoveObject(sf::Vector2f pos) {
 	mSprite.move(pos);
 	mPosition = mSprite.getPosition();

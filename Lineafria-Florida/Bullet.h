@@ -15,7 +15,9 @@ public:
 	void SetPosition(sf::Vector2f pos);
 	void SetScale(sf::Vector2f scale);
 	void SetRotation(float angle);
+
 	void Update(sf::RenderWindow* window, const float& mElapsed);
+	void Update(sf::RenderWindow* window, const float& mElapsed, sf::Vector2f playerPos);
 
 	inline sf::Sprite* GetSprite() { return &mSprite; }
 	inline sf::Vector2f GetPosition() { return mPosition; }

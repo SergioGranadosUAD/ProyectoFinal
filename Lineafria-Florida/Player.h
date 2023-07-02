@@ -9,11 +9,14 @@ public:
 	void SetPosition(sf::Vector2f pos);
 	void SetScale(sf::Vector2f scale);
 	void SetRotation(float angle);
+	void SetHealth(int hp);
+	void TakeDamage(int damage);
 	void CheckPlayerBounds(sf::RenderWindow* window);
-	void Update(sf::RenderWindow* window, float mElapsed);
+	void Update(sf::RenderWindow* window, const float& mElapsed);
 
 	inline sf::Sprite* GetSprite() { return &mSprite; }
 	inline sf::Vector2f GetPosition() { return mPosition; }
+	inline int GetHealth() { return mHealth; }
 	inline int GetSpeed() { return MAX_SPEED; }
 
 private:
@@ -21,6 +24,8 @@ private:
 	sf::Sprite mSprite;
 	sf::Vector2f mPosition;
 	sf::Vector2f mCursorPos;
-	const int MAX_SPEED = 500;
+	int mHealth;
+	const int MAX_HEALTH = 100;
+	const int MAX_SPEED = 300;
 	const float PI = 3.1416;
 };

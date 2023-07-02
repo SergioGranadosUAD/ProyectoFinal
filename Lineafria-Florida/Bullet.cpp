@@ -1,7 +1,7 @@
 #include "Bullet.h"
 #include <iostream>
 
-Bullet::Bullet(sf::RenderWindow* window, sf::Vector2f pos, float angle) {
+Bullet::Bullet(sf::RenderWindow* window, sf::Vector2f pos, float angle, BULLET_ID id) {
 	if (!mTexture.loadFromFile("Resources/Projectiles.png")) {
 
 	}
@@ -12,10 +12,11 @@ Bullet::Bullet(sf::RenderWindow* window, sf::Vector2f pos, float angle) {
 	this->SetPosition(pos);
 	this->SetScale(sf::Vector2f(2.0f, 2.0f));
 	this->SetRotation(angle);
-	std::cout << "Bullet created" << std::endl;
+	mID = id;
+	std::cout << "Projectile created." << std::endl;
 }
 
-void Bullet::Update(sf::RenderWindow* window, float mElapsed) {
+void Bullet::Update(sf::RenderWindow* window, const float& mElapsed) {
 	sf::Vector2f direction;
 	direction.x = cos((PI / 180) * mSprite.getRotation()) * MAX_SPEED * mElapsed;
 	direction.y = sin((PI / 180) * mSprite.getRotation()) * MAX_SPEED * mElapsed;

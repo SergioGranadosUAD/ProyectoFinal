@@ -14,9 +14,10 @@ Player::Player(sf::RenderWindow* window) {
     this->GetSprite()->setOrigin(spriteSize.width * .5f, spriteSize.height * .5f);
     this->SetPosition(playerPos);
     this->SetScale(playerScale);
+    this->SetHealth(MAX_HEALTH);
 }
 
-void Player::Update(sf::RenderWindow* window, float mElapsed) {
+void Player::Update(sf::RenderWindow* window, const float& mElapsed) {
     CheckPlayerBounds(window);
 
     mCursorPos = sf::Vector2f(sf::Mouse::getPosition(*window));
@@ -40,6 +41,14 @@ void Player::SetScale(sf::Vector2f scale) {
 
 void Player::SetRotation(float angle) {
     mSprite.setRotation(angle);
+}
+
+void Player::SetHealth(int hp) {
+    mHealth = hp;
+}
+
+void Player::TakeDamage(int damage) {
+    mHealth -= damage;
 }
 
 void Player::CheckPlayerBounds(sf::RenderWindow* window) {

@@ -1,10 +1,12 @@
 #include "Game.h"
-#include <vector>
 
 Game::Game() :
-	mWindow(new Window("Game Window", sf::Vector2u(800, 600))), mPlayer(new Player(mWindow.get()->GetMWindow())) {
+	mWindow(new Window("Game Window", sf::Vector2u(800, 600))), mPlayer(new Player(mWindow.get()->GetMWindow())), mElapsed(0) {
 	mWindow.get()->GetMWindow()->setVerticalSyncEnabled(true);
     mWindow.get()->GetMWindow()->setKeyRepeatEnabled(false);
+
+    std::shared_ptr<Enemy> enemyPtr(new Enemy(mWindow.get()->GetMWindow(), sf::Vector2f(100, 100)));
+    enemies.push_back(enemyPtr);
 };
 
 Game::~Game(){}
@@ -64,7 +66,7 @@ void Game::HandleInput(){
 
         if (event.type == sf::Event::MouseButtonPressed) {
             if (event.mouseButton.button == sf::Mouse::Left) {
-                std::shared_ptr<Bullet> bullet(new Bullet(mWindow.get()->GetMWindow(), mPlayer.get()->GetPosition(), mPlayer.get()->GetSprite()->getRotation()));
+                std::shared_ptr<Bullet> bullet(new Bullet(mWindow.get()->GetMWindow(), mPlayer.get()->GetPosition(), mPlayer.get()->GetSprite()->getRotation(), BULLET_ID(ALLIED)));
                 projectiles.push_back(bullet);
             }
         }
@@ -97,14 +99,53 @@ void Game::Update() {
     sf::View view = mWindow.get()->GetMWindow()->getView();
     sf::FloatRect viewRect(view.getCenter() - view.getSize() / 2.f, view.getSize());
 
+    //Iteración de proyectiles.
     for (int i = 0; i < projectiles.size(); ++i) {
+        
+        //Se eliminan aquellos proyectiles que salen de la pantalla.
         if (!(viewRect.contains(projectiles[i]->GetPosition()))) {
-            std::cout << "Shared count" << projectiles[i].use_count() << std::endl;
             projectiles.erase(projectiles.begin() + i);
             std::cout << "Projectile deleted" << std::endl;
         }
+        else {
+            //Se comprueba si un proyectil es enemigo y colisiona con el jugador.
+            if (projectiles[i].get()->GetSprite()->getGlobalBounds().intersects(mPlayer.get()->GetSprite()->getGlobalBounds()) && projectiles[i].get()->GetID() == BULLET_ID::ENEMY) {
+                projectiles.erase(projectiles.begin() + i);
+                mPlayer.get()->TakeDamage(20);
+                if (mPlayer.get()->GetHealth() <= 0) {
+                    std::cout << "Player death." << std::endl;
+                    RestartGame();
+                }
+                break;
+            }
+
+            //Se comprueba si el proyectil es del jugador y colisiona con un enemigo.
+            for (int k = 0; k < enemies.size(); ++k) {
+                if (projectiles[i].get()->GetSprite()->getGlobalBounds().intersects(enemies[k].get()->GetHitbox()) && projectiles[i].get()->GetID() == BULLET_ID::ALLIED) {
+                    projectiles.erase(projectiles.begin() + i);
+                    enemies[k].get()->TakeDamage(20);
+                    if (enemies[k].get()->GetHealth() <= 0) {
+                        enemies.erase(enemies.begin() + k);
+                        std::cout << "Enemy defeated" << std::endl;
+                    }
+                    break;
+                }
+            }
+        }
+
     }
     
+
+    //Test section
+    if (timer2s < 120) {
+        ++timer2s;
+    }
+    else {
+        std::shared_ptr<Bullet> bullet(new Bullet(mWindow.get()->GetMWindow(), sf::Vector2f(100, 500), 0, BULLET_ID(ENEMY)));
+        projectiles.push_back(bullet);
+        timer2s = 0;
+    }
+
 	RestartClock();
 }
 
@@ -113,6 +154,9 @@ void Game::Render() {
 	mWindow.get()->Draw(*mPlayer.get()->GetSprite());
     for (auto bullet : projectiles) {
         mWindow.get()->Draw(*bullet->GetSprite());
+    }
+    for (auto enemy : enemies) {
+        mWindow.get()->Draw(*enemy->GetSprite());
     }
 	mWindow.get()->EndDraw();
 }
@@ -126,6 +170,17 @@ float Game::GetElapsed() {
 	return mElapsed;
 }
 
-Window* Game::GetWindow() {
-	return mWindow.get();
+std::weak_ptr<Window> Game::GetWindow() {
+    std::weak_ptr<Window> windowPtr = mWindow;
+	return windowPtr;
+}
+
+void Game::RestartGame() {
+    mPlayer.reset();
+    mPlayer = std::make_unique<Player>(mWindow.get()->GetMWindow());
+    mClock.restart();
+    mElapsed = 0.f;
+    animFlags = {};
+    projectiles.clear();
+    enemies.clear();
 }

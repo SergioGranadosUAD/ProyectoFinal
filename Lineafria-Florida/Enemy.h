@@ -1,31 +1,33 @@
 #pragma once
 #include <sfml/Graphics.hpp>
-#include <cmath>
 #include "Entity.h"
 
-enum BULLET_ID {
-	ALLIED = 0,
-	ENEMY = 1,
-};
-
-class Bullet : public Entity {
+class Enemy : public Entity {
 public:
-	Bullet(sf::RenderWindow* window, sf::Vector2f pos, float angle, BULLET_ID id);
+	Enemy(sf::RenderWindow* window, sf::Vector2f pos);
 	void MoveObject(sf::Vector2f pos);
 	void SetPosition(sf::Vector2f pos);
 	void SetScale(sf::Vector2f scale);
 	void SetRotation(float angle);
+	void SetHealth(int hp);
+	void TakeDamage(int damage);
 	void Update(sf::RenderWindow* window, const float& mElapsed);
+	
 
 	inline sf::Sprite* GetSprite() { return &mSprite; }
 	inline sf::Vector2f GetPosition() { return mPosition; }
 	inline int GetSpeed() { return MAX_SPEED; }
-	inline BULLET_ID GetID() { return mID; }
+	inline int GetHealth() { return mHealth; }
+	inline sf::FloatRect GetHitbox() { return mHitbox; }
+
 private:
 	sf::Texture mTexture;
 	sf::Sprite mSprite;
 	sf::Vector2f mPosition;
-	BULLET_ID mID;
-	const int MAX_SPEED = 1000;
+	sf::Vector2f mCursorPos;
+	sf::FloatRect mHitbox;
+	int mHealth;
+	const int MAX_HEALTH = 100;
+	const int MAX_SPEED = 500;
 	const float PI = 3.1416;
 };

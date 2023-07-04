@@ -2,11 +2,23 @@
 #include <sfml/Graphics.hpp>
 #include "Entity.h"
 
+/************************************
+* @class:    ENEMY_TYPE
+* @access:   public
+* @brief:    Este enum sirve para definir el tipo de enemigo, lo cual define su comportamiento.
+* @details:  Sin detalles.
+*************************************/
 enum ENEMY_TYPE {
 	CHASER = 0,
 	SHOOTER = 1
 };
 
+/************************************
+* @class:    Enemy
+* @access:   public
+* @brief:    Esta clase, derivada de Entity, corresponde a los enemigos, y presenta múltiples preset para los enemigos que puede haber.
+* @details:  Contiene diferentes comportamientos dependiendo del tipo de enemigo del que se trate.
+*************************************/
 class Enemy : public Entity {
 public:
 	Enemy(sf::RenderWindow* window, sf::Vector2f pos, ENEMY_TYPE type);
@@ -42,4 +54,6 @@ private:
 	int MAX_SPEED = 500;
 	const float PI = 3.1416;
 	ENEMY_TYPE mType;
+
+	std::shared_ptr<sf::Vector2f> mPlayerPos;
 };

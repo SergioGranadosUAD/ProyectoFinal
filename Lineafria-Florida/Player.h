@@ -2,6 +2,12 @@
 #include <sfml/Graphics.hpp>
 #include "Entity.h"
 
+/************************************
+* @class:    Player
+* @access:   public
+* @brief:    Esta clase, derivada de Entity, corresponde al jugador.
+* @details:  Además de heredar métodos de Entity, tiene métodos adicionales útiles para el jugador.
+*************************************/
 class Player : public Entity {
 public:
 	Player(sf::RenderWindow* window);

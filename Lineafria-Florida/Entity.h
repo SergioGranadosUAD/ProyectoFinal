@@ -1,6 +1,14 @@
 #pragma once
 #include <sfml/Graphics.hpp>
 #include <memory>
+
+/************************************
+* @class:    Entity
+* @access:   public
+* @brief:    Esta clase abstracta sirve como base para los tipos de entidades del juego.
+* @details:  Cuenta con los aspectos base de cualquier entidad como su textura, sprite y posición, así como un conjunto de métodos para su actualización y
+*			 la modificación de sus valores.
+*************************************/
 class Entity {
 public:
 	Entity();

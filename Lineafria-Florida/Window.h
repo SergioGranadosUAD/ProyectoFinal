@@ -3,6 +3,12 @@
 #include <sfml/Graphics.hpp>
 #include <memory>
 
+/************************************
+* @class:    Window
+* @access:   public
+* @brief:    Esta clase contiene la ventana del juego, necesaria para mostrarlo de manera gráfica.
+* @details:  Cuenta con una ventana de SFML, elementos relacionados a esta ventana, y métodos para realizar las tareas necesarias para su construcción y dibujo.
+*************************************/
 class Window {
 public:
 	Window();

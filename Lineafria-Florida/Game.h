@@ -38,14 +38,15 @@ public:
 	void CheckProjectileCollision();
 	void RestartGame();
 
-	float GetElapsed();
+	std::weak_ptr<float> GetElapsed();
 	std::weak_ptr<Window> GetWindow();
 
 private:
 	std::shared_ptr<Window> mWindow;
+	std::shared_ptr<sf::RenderWindow> mRenderWindow;
 	std::unique_ptr<Player> mPlayer;
 	sf::Clock mClock;
-	float mElapsed;
+	std::shared_ptr<float> mElapsed;
 	AnimFlags animFlags;
 	std::vector<std::shared_ptr<Bullet>> projectiles;
 	std::vector<std::shared_ptr<Enemy>> enemies;

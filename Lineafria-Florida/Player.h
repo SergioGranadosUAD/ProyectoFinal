@@ -10,27 +10,27 @@
 *************************************/
 class Player : public Entity {
 public:
-	Player(sf::RenderWindow* window);
+	Player(std::weak_ptr<sf::RenderWindow> window);
 	void MoveObject(sf::Vector2f pos);
 	void SetPosition(sf::Vector2f pos);
 	void SetScale(sf::Vector2f scale);
 	void SetRotation(float angle);
 	void SetHealth(int hp);
 	void TakeDamage(int damage);
-	void CheckPlayerBounds(sf::RenderWindow* window);
+	void CheckPlayerBounds();
 
-	void Update(sf::RenderWindow* window, const float& mElapsed);
-	void Update(sf::RenderWindow* window, const float& mElapsed, sf::Vector2f playerPos);
+	void Update();
 
 	inline sf::Sprite* GetSprite() { return &mSprite; }
-	inline sf::Vector2f GetPosition() { return mPosition; }
+	inline std::weak_ptr<sf::Vector2f> GetPosition() { return mPosition; }
 	inline int GetHealth() { return mHealth; }
 	inline int GetSpeed() { return MAX_SPEED; }
 
 private:
 	sf::Texture mTexture;
 	sf::Sprite mSprite;
-	sf::Vector2f mPosition;
+	std::shared_ptr<sf::Vector2f> mPosition;
+	std::shared_ptr<sf::RenderWindow> mWindow;
 	sf::Vector2f mCursorPos;
 	int mHealth;
 	const int MAX_HEALTH = 100;

@@ -8,18 +8,22 @@
 * @brief:    Constructor de la clase Enemy, carga su textura, se la asigna y establece sus valores iniciales.
 * @details:  Sin comentarios.
 *************************************/
-Enemy::Enemy(sf::RenderWindow* window, sf::Vector2f pos, ENEMY_TYPE type) {
+Enemy::Enemy(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<float> elapsed, std::weak_ptr<sf::Vector2f> playerPos, sf::Vector2f pos, ENEMY_TYPE type) {
 	if (!mTexture.loadFromFile("Resources/EnemyAim.png")) {
 
 	}
 	mSprite.setTexture(mTexture);
+
+	mWindow = window.lock();
+	mElapsed = elapsed.lock();
+	mPlayerPos = playerPos.lock();
 
 	sf::Vector2f enemyScale(2.0f, 2.0f);
 	sf::FloatRect spriteSize = this->GetSprite()->getGlobalBounds();
 	this->GetSprite()->setOrigin(spriteSize.width * .5f, spriteSize.height * .5f);
 	this->SetPosition(pos);
 	this->SetScale(enemyScale);
-	
+
 	mType = type;
 
 	if (mType == ENEMY_TYPE::CHASER) {
@@ -37,10 +41,6 @@ Enemy::Enemy(sf::RenderWindow* window, sf::Vector2f pos, ENEMY_TYPE type) {
 	//mHitbox = sf::FloatRect(pos.x-11, pos.y-8, 15.f, 14.f);
 }
 
-//Unused
-void Enemy::Update(sf::RenderWindow* window, const float& mElapsed) {
-}
-
 /************************************
 * @method:   Update
 * @access:   public
@@ -48,14 +48,14 @@ void Enemy::Update(sf::RenderWindow* window, const float& mElapsed) {
 * @brief:    Método que actualiza al enemigo cada frame. Dependiendo del tipo de enemigo que es, ejecuta un comportamiento diferente.
 * @details:  Sin comentarios.
 *************************************/
-void Enemy::Update(sf::RenderWindow* window, const float& mElapsed, sf::Vector2f playerPos) {
+void Enemy::Update() {
 
 	switch (mType) {
 	case ENEMY_TYPE::CHASER:
-		ChasePlayer(mElapsed, playerPos);
+		ChasePlayer();
 		break;
 	case ENEMY_TYPE::SHOOTER:
-		ShootPlayer(mElapsed, playerPos);
+		ShootPlayer();
 		break;
 	}
 }
@@ -146,11 +146,11 @@ void Enemy::RestartCooldown() {
 * @brief:    Comportamiento específico de un tipo de enemigo. Persigue al jugador para intentar acercarse a él.
 * @details:  Sin comentarios.
 *************************************/
-void Enemy::ChasePlayer(float mElapsed, sf::Vector2f playerPos) {
-	this->SetRotation(atan2f(playerPos.y - mPosition.y, playerPos.x - mPosition.x) * (180 / PI));
+void Enemy::ChasePlayer() {
+	this->SetRotation(atan2f(mPlayerPos.get()->y - mPosition.y, mPlayerPos.get()->x - mPosition.x) * (180 / PI));
 	sf::Vector2f direction;
-	direction.x = cos((PI / 180) * mSprite.getRotation()) * MAX_SPEED * mElapsed;
-	direction.y = sin((PI / 180) * mSprite.getRotation()) * MAX_SPEED * mElapsed;
+	direction.x = cos((PI / 180) * mSprite.getRotation()) * MAX_SPEED * *mElapsed;
+	direction.y = sin((PI / 180) * mSprite.getRotation()) * MAX_SPEED * *mElapsed;
 	this->MoveObject(direction);
 }
 
@@ -161,6 +161,6 @@ void Enemy::ChasePlayer(float mElapsed, sf::Vector2f playerPos) {
 * @brief:    Comportamiento específico de un tipo de enemigo. Le dispara al jugador desde lejos y trata de mantener su distancia.
 * @details:  Sin comentarios.
 *************************************/
-void Enemy::ShootPlayer(float mElapsed, sf::Vector2f playerPos) {
+void Enemy::ShootPlayer() {
 
 }

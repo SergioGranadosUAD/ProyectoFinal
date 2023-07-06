@@ -21,17 +21,16 @@ enum ENEMY_TYPE {
 *************************************/
 class Enemy : public Entity {
 public:
-	Enemy(sf::RenderWindow* window, sf::Vector2f pos, ENEMY_TYPE type);
+	Enemy(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<float> elapsed, std::weak_ptr<sf::Vector2f> playerPos, sf::Vector2f pos, ENEMY_TYPE type);
 	void MoveObject(sf::Vector2f pos);
 	void SetPosition(sf::Vector2f pos);
 	void SetScale(sf::Vector2f scale);
 	void SetRotation(float angle);
 	void SetHealth(int hp);
 	void TakeDamage(int damage);
-	void Update(sf::RenderWindow* window, const float& mElapsed);
-	void Update(sf::RenderWindow* window, const float& mElapsed, sf::Vector2f playerPos);
-	void ChasePlayer(float mElapsed, sf::Vector2f playerPos);
-	void ShootPlayer(float mElapsed, sf::Vector2f playerPos);
+	void Update();
+	void ChasePlayer();
+	void ShootPlayer();
 	void RestartCooldown();
 	
 
@@ -56,4 +55,6 @@ private:
 	ENEMY_TYPE mType;
 
 	std::shared_ptr<sf::Vector2f> mPlayerPos;
+	std::shared_ptr<sf::RenderWindow> mWindow;
+	std::shared_ptr<float> mElapsed;
 };

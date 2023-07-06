@@ -7,16 +7,19 @@
 * @brief:    Constructor de la clase Player, carga la textura y asigna los valores iniciales del jugador.
 * @details:  Sin comentarios.
 *************************************/
-Player::Player(sf::RenderWindow* window) {
+Player::Player(std::weak_ptr<sf::RenderWindow> window) {
 	if (!mTexture.loadFromFile("Resources/PlayerAim1.png")) {
 
 	}
 	mSprite.setTexture(mTexture);
 
+    mWindow = window.lock();
+    mPosition = std::make_shared<sf::Vector2f>(0.f, 0.f);
+
     sf::Vector2f playerPos;
     sf::Vector2f playerScale(2.0f, 2.0f);
-    playerPos.x = window->getSize().x * .5f;
-    playerPos.y = window->getSize().y * .5f;
+    playerPos.x = mWindow.get()->getSize().x * .5f;
+    playerPos.y = mWindow.get()->getSize().y * .5f;
     sf::FloatRect spriteSize = this->GetSprite()->getGlobalBounds();
     this->GetSprite()->setOrigin(spriteSize.width * .5f, spriteSize.height * .5f);
     this->SetPosition(playerPos);
@@ -31,16 +34,11 @@ Player::Player(sf::RenderWindow* window) {
 * @brief:    Este método actualiza el jugador cada frame, encargándose de rotar al jugador dependiendo del cursor.
 * @details:  Sin comentarios.
 *************************************/
-void Player::Update(sf::RenderWindow* window, const float& mElapsed) {
-    CheckPlayerBounds(window);
+void Player::Update() {
+    CheckPlayerBounds();
 
-    mCursorPos = sf::Vector2f(sf::Mouse::getPosition(*window));
-    SetRotation(atan2f(mCursorPos.y - mPosition.y, mCursorPos.x - mPosition.x) * (180 / PI));
-
-}
-
-//Unused
-void Player::Update(sf::RenderWindow* window, const float& mElapsed, sf::Vector2f playerPos) {
+    mCursorPos = sf::Vector2f(sf::Mouse::getPosition(*mWindow.get()));
+    SetRotation(atan2f(mCursorPos.y - mPosition.get()->y, mCursorPos.x - mPosition.get()->x) * (180 / PI));
 
 }
 
@@ -53,7 +51,7 @@ void Player::Update(sf::RenderWindow* window, const float& mElapsed, sf::Vector2
 *************************************/
 void Player::MoveObject(sf::Vector2f pos) {
 	mSprite.move(pos);
-	mPosition = mSprite.getPosition();
+	*mPosition = mSprite.getPosition();
 }
 
 /************************************
@@ -65,7 +63,7 @@ void Player::MoveObject(sf::Vector2f pos) {
 *************************************/
 void Player::SetPosition(sf::Vector2f pos) {
 	mSprite.setPosition(pos);
-	mPosition = pos;
+	*mPosition = pos;
 }
 
 /************************************
@@ -119,21 +117,21 @@ void Player::TakeDamage(int damage) {
 * @brief:    Este método revisa si el jugador se intenta salir de la ventana, y lo detiene de ser así.
 * @details:  Sin comentarios.
 *************************************/
-void Player::CheckPlayerBounds(sf::RenderWindow* window) {
-    if (mPosition.x < 0) {
+void Player::CheckPlayerBounds() {
+    if (mPosition.get()->x < 0) {
         //SetPosition(sf::Vector2f(window->getSize().x, mPosition.y));
-        SetPosition(sf::Vector2f(0.f, mPosition.y));
+        SetPosition(sf::Vector2f(0.f, mPosition.get()->y));
     }
-    if (mPosition.x > (int)window->getSize().x) {
+    if (mPosition.get()->x > (int)mWindow.get()->getSize().x) {
         //SetPosition(sf::Vector2f(0.f, mPosition.y));
-        SetPosition(sf::Vector2f(window->getSize().x, mPosition.y));
+        SetPosition(sf::Vector2f(mWindow.get()->getSize().x, mPosition.get()->y));
     }
-    if (mPosition.y < 0) {
+    if (mPosition.get()->y < 0) {
         //SetPosition(sf::Vector2f(mPosition.x, window->getSize().y));
-        SetPosition(sf::Vector2f(mPosition.x, 0.f));
+        SetPosition(sf::Vector2f(mPosition.get()->x, 0.f));
     }
-    if (mPosition.y > (int)window->getSize().y) {
+    if (mPosition.get()->y >(int)mWindow.get()->getSize().y) {
         //SetPosition(sf::Vector2f(mPosition.x, 0.f));
-        SetPosition(sf::Vector2f(mPosition.x, window->getSize().y));
+        SetPosition(sf::Vector2f(mPosition.get()->x, mWindow.get()->getSize().y));
     }
 }

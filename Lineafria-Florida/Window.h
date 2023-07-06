@@ -27,13 +27,13 @@ public:
 
 	void Draw(sf::Drawable& mDrawable);
 
-	inline sf::RenderWindow* GetMWindow() { return &mWindow; }
+	inline std::weak_ptr<sf::RenderWindow> GetMWindow() { return mWindow; }
 private:
 	void Setup(const std::string& mTitle, const sf::Vector2u& mSize);
 	void Destroy();
 	void Create();
 
-	sf::RenderWindow mWindow;
+	std::shared_ptr<sf::RenderWindow> mWindow;
 	sf::Vector2u mWindowSize;
 	std::string mWindowTitle;
 	bool mIsDone;

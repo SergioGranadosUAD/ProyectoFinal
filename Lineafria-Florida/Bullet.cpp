@@ -8,10 +8,14 @@
 * @brief:    Constructor de la clase Bullet, carga la textura de esta y le asigna los valores iniciales.
 * @details:  Sin comentarios.
 *************************************/
-Bullet::Bullet(sf::RenderWindow* window, sf::Vector2f pos, float angle, BULLET_ID id) {
+Bullet::Bullet(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<float> elapsed, sf::Vector2f pos, float angle, BULLET_ID id) {
 	if (!mTexture.loadFromFile("Resources/Projectiles.png")) {
 
 	}
+
+	mWindow = window.lock();
+	mElapsed = elapsed.lock();
+
 	mSprite.setTexture(mTexture);
 	mSprite.setTextureRect(sf::IntRect(256, 128, 16, 16));
 	sf::FloatRect spriteSize = this->GetSprite()->getGlobalBounds();
@@ -23,6 +27,10 @@ Bullet::Bullet(sf::RenderWindow* window, sf::Vector2f pos, float angle, BULLET_I
 	std::cout << "Projectile created." << std::endl;
 }
 
+Bullet::~Bullet() {
+	std::cout << "Projectile destroyed." << std::endl;
+}
+
 /************************************
 * @method:   Update
 * @access:   public
@@ -30,16 +38,11 @@ Bullet::Bullet(sf::RenderWindow* window, sf::Vector2f pos, float angle, BULLET_I
 * @brief:    Este método actualiza el proyectil cada frame, moviéndolo en la dirección en la que se encuentra la rotación.
 * @details:  Sin comentarios.
 *************************************/
-void Bullet::Update(sf::RenderWindow* window, const float& mElapsed) {
+void Bullet::Update() {
 	sf::Vector2f direction;
-	direction.x = cos((PI / 180) * mSprite.getRotation()) * MAX_SPEED * mElapsed;
-	direction.y = sin((PI / 180) * mSprite.getRotation()) * MAX_SPEED * mElapsed;
+	direction.x = cos((PI / 180) * mSprite.getRotation()) * MAX_SPEED * *mElapsed;
+	direction.y = sin((PI / 180) * mSprite.getRotation()) * MAX_SPEED * *mElapsed;
 	this->MoveObject(direction);
-}
-
-//Unused
-void Bullet::Update(sf::RenderWindow* window, const float& mElapsed, sf::Vector2f playerPos) {
-
 }
 
 /************************************

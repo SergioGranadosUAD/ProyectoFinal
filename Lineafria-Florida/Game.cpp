@@ -8,17 +8,21 @@
 * @details:  Sin detalles.
 *************************************/
 Game::Game() :
-	mWindow(new Window("Game Window", sf::Vector2u(800, 600))), mPlayer(new Player(mWindow.get()->GetMWindow())), mElapsed(0) {
-	mWindow.get()->GetMWindow()->setVerticalSyncEnabled(true);
-    mWindow.get()->GetMWindow()->setKeyRepeatEnabled(false);
+	mWindow(new Window("Game Window", sf::Vector2u(800, 600))), mElapsed(std::make_shared<float>(0)) {
+    mRenderWindow = mWindow->GetMWindow().lock();
+    mPlayer = std::make_unique<Player>(mRenderWindow);
 
-    std::shared_ptr<Enemy> enemyPtr(new Enemy(mWindow.get()->GetMWindow(), sf::Vector2f(100, 100), ENEMY_TYPE(CHASER)));
+	mRenderWindow->setVerticalSyncEnabled(true);
+    mRenderWindow->setKeyRepeatEnabled(false);
+
+
+    std::shared_ptr<Enemy> enemyPtr(new Enemy(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(100, 100), ENEMY_TYPE(CHASER)));
     enemies.push_back(enemyPtr);
 
-    std::shared_ptr<Enemy> enemyPtr2(new Enemy(mWindow.get()->GetMWindow(), sf::Vector2f(400, 100), ENEMY_TYPE(CHASER)));
+    std::shared_ptr<Enemy> enemyPtr2(new Enemy(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(400, 100), ENEMY_TYPE(CHASER)));
     enemies.push_back(enemyPtr2);
 
-    std::shared_ptr<Enemy> enemyPtr3(new Enemy(mWindow.get()->GetMWindow(), sf::Vector2f(700, 100), ENEMY_TYPE(CHASER)));
+    std::shared_ptr<Enemy> enemyPtr3(new Enemy(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(700, 100), ENEMY_TYPE(CHASER)));
     enemies.push_back(enemyPtr3);
 };
 
@@ -34,7 +38,7 @@ Game::~Game(){}
 void Game::HandleInput(){
 	sf::Event event;
     //Procesa las diferentes teclas introducidas por el jugador.
-	while (mWindow.get()->GetMWindow()->pollEvent(event)) {
+	while (mRenderWindow->pollEvent(event)) {
 		if (event.type == sf::Event::Closed) {
 			mWindow.get()->FinishWindow();
 		}
@@ -87,7 +91,7 @@ void Game::HandleInput(){
 
         if (event.type == sf::Event::MouseButtonPressed) {
             if (event.mouseButton.button == sf::Mouse::Left) {
-                std::shared_ptr<Bullet> bullet(new Bullet(mWindow.get()->GetMWindow(), mPlayer.get()->GetPosition(), mPlayer.get()->GetSprite()->getRotation(), BULLET_ID(ALLIED)));
+                std::shared_ptr<Bullet> bullet(new Bullet(mRenderWindow, mElapsed, *mPlayer.get()->GetPosition().lock(), mPlayer.get()->GetSprite()->getRotation(), BULLET_ID(ALLIED)));
                 projectiles.push_back(bullet);
             }
         }
@@ -95,16 +99,16 @@ void Game::HandleInput(){
 
     //Mueve al jugador dependiendo de las banderas que se encuentren encedidas.
     if (animFlags.upPressed) {
-        mPlayer.get()->MoveObject(sf::Vector2f(0.f, -mPlayer.get()->GetSpeed() * mElapsed));
+        mPlayer.get()->MoveObject(sf::Vector2f(0.f, -mPlayer.get()->GetSpeed() * *mElapsed));
     }
     if (animFlags.downPressed) {
-        mPlayer.get()->MoveObject(sf::Vector2f(0.f, mPlayer.get()->GetSpeed() * mElapsed));
+        mPlayer.get()->MoveObject(sf::Vector2f(0.f, mPlayer.get()->GetSpeed() * *mElapsed));
     }
     if (animFlags.leftPressed) {
-        mPlayer.get()->MoveObject(sf::Vector2f(-mPlayer.get()->GetSpeed() * mElapsed, 0.f));
+        mPlayer.get()->MoveObject(sf::Vector2f(-mPlayer.get()->GetSpeed() * *mElapsed, 0.f));
     }
     if (animFlags.rightPressed) {
-        mPlayer.get()->MoveObject(sf::Vector2f(mPlayer.get()->GetSpeed() * mElapsed, 0.f));
+        mPlayer.get()->MoveObject(sf::Vector2f(mPlayer.get()->GetSpeed() * *mElapsed, 0.f));
     }
 }
 
@@ -118,12 +122,12 @@ void Game::HandleInput(){
 void Game::Update() {
 
     //Actualización de todas las entidades en el juego.
-    mPlayer.get()->Update(mWindow.get()->GetMWindow(), mElapsed);
+    mPlayer.get()->Update();
     for (auto bullet : projectiles) {
-        bullet->Update(mWindow.get()->GetMWindow(), mElapsed);
+        bullet->Update();
     }
     for (auto enemy : enemies) {
-        enemy->Update(mWindow.get()->GetMWindow(), mElapsed, mPlayer.get()->GetPosition());
+        enemy->Update();
 
         //Ataque cuerpo a cuerpo hacia el jugador.
         if (enemy->GetSprite()->getGlobalBounds().intersects(mPlayer.get()->GetSprite()->getGlobalBounds()) && enemy->GetCooldownTime() > 2000) {
@@ -171,17 +175,17 @@ void Game::Render() {
 * @details:  Sin detalles.
 *************************************/
 void Game::RestartClock() {
-	mElapsed = mClock.restart().asSeconds();
+	*mElapsed = mClock.restart().asSeconds();
 }
 
 /************************************
 * @method:   GetElapsed
 * @access:   public
-* @return    float
+* @return    weak_ptr<float>
 * @brief:    Este método devuelve el tiempo transcurrido desde el último reinicio del reloj.
 * @details:  Sin detalles.
 *************************************/
-float Game::GetElapsed() {
+std::weak_ptr<float> Game::GetElapsed() {
 	return mElapsed;
 }
 
@@ -206,20 +210,20 @@ std::weak_ptr<Window> Game::GetWindow() {
 *************************************/
 void Game::RestartGame() {
     mPlayer.reset();
-    mPlayer = std::make_unique<Player>(mWindow.get()->GetMWindow());
+    mPlayer = std::make_unique<Player>(mRenderWindow);
     mClock.restart();
-    mElapsed = 0.f;
+    *mElapsed = 0.f;
     animFlags = {};
     projectiles.clear();
     enemies.clear();
 
-    std::shared_ptr<Enemy> enemyPtr(new Enemy(mWindow.get()->GetMWindow(), sf::Vector2f(100, 100), ENEMY_TYPE(CHASER)));
+    std::shared_ptr<Enemy> enemyPtr(new Enemy(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(100, 100), ENEMY_TYPE(CHASER)));
     enemies.push_back(enemyPtr);
 
-    std::shared_ptr<Enemy> enemyPtr2(new Enemy(mWindow.get()->GetMWindow(), sf::Vector2f(400, 100), ENEMY_TYPE(CHASER)));
+    std::shared_ptr<Enemy> enemyPtr2(new Enemy(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(400, 100), ENEMY_TYPE(CHASER)));
     enemies.push_back(enemyPtr2);
 
-    std::shared_ptr<Enemy> enemyPtr3(new Enemy(mWindow.get()->GetMWindow(), sf::Vector2f(700, 100), ENEMY_TYPE(CHASER)));
+    std::shared_ptr<Enemy> enemyPtr3(new Enemy(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(700, 100), ENEMY_TYPE(CHASER)));
     enemies.push_back(enemyPtr3);
 }
 
@@ -231,7 +235,7 @@ void Game::RestartGame() {
 * @details:  Sin detalles.
 *************************************/
 void Game::CheckProjectileCollision() {
-    sf::View view = mWindow.get()->GetMWindow()->getView();
+    sf::View view = mRenderWindow->getView();
     sf::FloatRect viewRect(view.getCenter() - view.getSize() / 2.f, view.getSize());
 
     //Iteración de proyectiles.
@@ -240,7 +244,7 @@ void Game::CheckProjectileCollision() {
         //Se eliminan aquellos proyectiles que salen de la pantalla.
         if (!(viewRect.contains(projectiles[i]->GetPosition()))) {
             projectiles.erase(projectiles.begin() + i);
-            std::cout << "Projectile deleted" << std::endl;
+            //std::cout << "Projectile deleted" << std::endl;
         }
         else {
             //Se comprueba si un proyectil es enemigo y colisiona con el jugador.

@@ -22,14 +22,14 @@ enum BULLET_ID {
 *************************************/
 class Bullet : public Entity {
 public:
-	Bullet(sf::RenderWindow* window, sf::Vector2f pos, float angle, BULLET_ID id);
+	Bullet(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<float> elapsed, sf::Vector2f pos, float angle, BULLET_ID id);
+	~Bullet();
 	void MoveObject(sf::Vector2f pos);
 	void SetPosition(sf::Vector2f pos);
 	void SetScale(sf::Vector2f scale);
 	void SetRotation(float angle);
 
-	void Update(sf::RenderWindow* window, const float& mElapsed);
-	void Update(sf::RenderWindow* window, const float& mElapsed, sf::Vector2f playerPos);
+	void Update();
 
 	inline sf::Sprite* GetSprite() { return &mSprite; }
 	inline sf::Vector2f GetPosition() { return mPosition; }
@@ -39,6 +39,8 @@ private:
 	sf::Texture mTexture;
 	sf::Sprite mSprite;
 	sf::Vector2f mPosition;
+	std::shared_ptr<sf::RenderWindow> mWindow;
+	std::shared_ptr<float> mElapsed;
 	BULLET_ID mID;
 	const int MAX_SPEED = 1000;
 	const float PI = 3.1416;

@@ -57,7 +57,8 @@ void Window::Setup(const std::string& mTitle, const sf::Vector2u& mSize) {
 *************************************/
 void Window::Create() {
 	sf::Uint32 windowStyle = (mIsFullscreen ? sf::Style::Fullscreen : sf::Style::Default);
-	mWindow.create({ mWindowSize.x, mWindowSize.y, 32 }, mWindowTitle, windowStyle);
+	mWindow = std::make_shared<sf::RenderWindow>(sf::VideoMode(mWindowSize.x, mWindowSize.y, 32), mWindowTitle, windowStyle);
+	//mWindow.create({ mWindowSize.x, mWindowSize.y, 32 }, mWindowTitle, windowStyle);
 }
 
 /************************************
@@ -68,7 +69,7 @@ void Window::Create() {
 * @details:  Sin detalles
 *************************************/
 void Window::Destroy() {
-	mWindow.close();
+	mWindow->close();
 }
 
 /************************************
@@ -103,7 +104,7 @@ void Window::ToggleFullscreen() {
 * @details:  Sin comentarios.
 *************************************/
 void Window::BeginDraw() {
-	mWindow.clear();
+	mWindow->clear();
 }
 
 /************************************
@@ -114,7 +115,7 @@ void Window::BeginDraw() {
 * @details:  Sin comentarios.
 *************************************/
 void Window::EndDraw() {
-	mWindow.display();
+	mWindow->display();
 }
 
 /************************************
@@ -158,5 +159,5 @@ sf::Vector2u Window::GetWindowSize() {
 * @details:  Sin comentarios.
 *************************************/
 void Window::Draw(sf::Drawable& mDrawable) {
-	mWindow.draw(mDrawable);
+	mWindow->draw(mDrawable);
 }

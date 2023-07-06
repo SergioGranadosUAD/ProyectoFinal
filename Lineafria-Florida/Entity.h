@@ -23,5 +23,5 @@ public:
 private:
 	sf::Texture mTexture;
 	sf::Sprite mSprite;
-	std::shared_ptr<sf::Vector2i> mPosition;
+	std::weak_ptr<sf::Vector2i> mPosition;
 };

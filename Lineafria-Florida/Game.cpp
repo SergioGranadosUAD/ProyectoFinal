@@ -8,21 +8,25 @@
 * @details:  Sin detalles.
 *************************************/
 Game::Game() :
-	mWindow(new Window("Game Window", sf::Vector2u(800, 600))), mElapsed(std::make_shared<float>(0)) {
-    mRenderWindow = mWindow->GetMWindow().lock();
+	mWindow(std::make_shared<Window>("Game Window", sf::Vector2u(800, 600))), mElapsed(std::make_shared<float>(0)) {
+
+    mRenderWindow = mWindow->GetMWindow();
     mPlayer = std::make_unique<Player>(mRenderWindow);
 
-	mRenderWindow->setVerticalSyncEnabled(true);
-    mRenderWindow->setKeyRepeatEnabled(false);
+    if (!mRenderWindow.expired()) {
+        std::shared_ptr<sf::RenderWindow> windowPtr = mRenderWindow.lock();
+        windowPtr->setVerticalSyncEnabled(true);
+        windowPtr->setKeyRepeatEnabled(false);
+    }
 
 
-    std::shared_ptr<Enemy> enemyPtr(new Enemy(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(100, 100), ENEMY_TYPE(CHASER)));
+    std::shared_ptr<Enemy> enemyPtr(std::make_shared<Enemy>(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(100, 100), ENEMY_TYPE(CHASER)));
     enemies.push_back(enemyPtr);
 
-    std::shared_ptr<Enemy> enemyPtr2(new Enemy(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(400, 100), ENEMY_TYPE(CHASER)));
+    std::shared_ptr<Enemy> enemyPtr2(std::make_shared<Enemy>(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(400, 100), ENEMY_TYPE(CHASER)));
     enemies.push_back(enemyPtr2);
 
-    std::shared_ptr<Enemy> enemyPtr3(new Enemy(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(700, 100), ENEMY_TYPE(CHASER)));
+    std::shared_ptr<Enemy> enemyPtr3(std::make_shared<Enemy>(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(700, 100), ENEMY_TYPE(CHASER)));
     enemies.push_back(enemyPtr3);
 };
 
@@ -38,78 +42,82 @@ Game::~Game(){}
 void Game::HandleInput(){
 	sf::Event event;
     //Procesa las diferentes teclas introducidas por el jugador.
-	while (mRenderWindow->pollEvent(event)) {
-		if (event.type == sf::Event::Closed) {
-			mWindow.get()->FinishWindow();
-		}
-		if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::F5) {
-			mWindow.get()->ToggleFullscreen();
-		}
+    if (!mRenderWindow.expired()) {
+        std::shared_ptr<sf::RenderWindow> windowPtr = mRenderWindow.lock();
+        while (windowPtr->pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                mWindow.get()->FinishWindow();
+            }
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::F5) {
+                mWindow.get()->ToggleFullscreen();
+            }
 
-        if (event.type == sf::Event::KeyPressed) {
-            std::cout << "Key pressed." << std::endl;
-            switch (event.key.code) {
-            case sf::Keyboard::W:
-                animFlags.upPressed = true;
-                break;
-            case sf::Keyboard::S:
-                animFlags.downPressed = true;
-                break;
-            case sf::Keyboard::A:
-                animFlags.leftPressed = true;
-                break;
-            case sf::Keyboard::D:
-                animFlags.rightPressed = true;
-                break;
-                std::cout << "Mouse pressed" << std::endl;
-                break;
+            if (event.type == sf::Event::KeyPressed) {
+                std::cout << "Key pressed." << std::endl;
+                switch (event.key.code) {
+                case sf::Keyboard::W:
+                    animFlags.upPressed = true;
+                    break;
+                case sf::Keyboard::S:
+                    animFlags.downPressed = true;
+                    break;
+                case sf::Keyboard::A:
+                    animFlags.leftPressed = true;
+                    break;
+                case sf::Keyboard::D:
+                    animFlags.rightPressed = true;
+                    break;
+                    std::cout << "Mouse pressed" << std::endl;
+                    break;
 
-            default:
-                break;
+                default:
+                    break;
+                }
+            }
+
+            if (event.type == sf::Event::KeyReleased) {
+                std::cout << "Key released." << std::endl;
+                switch (event.key.code) {
+                case sf::Keyboard::W:
+                    animFlags.upPressed = false;
+                    break;
+                case sf::Keyboard::S:
+                    animFlags.downPressed = false;
+                    break;
+                case sf::Keyboard::A:
+                    animFlags.leftPressed = false;
+                    break;
+                case sf::Keyboard::D:
+                    animFlags.rightPressed = false;
+                    break;
+                default:
+                    break;
+                }
+            }
+
+            if (event.type == sf::Event::MouseButtonPressed) {
+                if (event.mouseButton.button == sf::Mouse::Left) {
+                    std::shared_ptr<Bullet> bullet(new Bullet(mRenderWindow, mElapsed, *mPlayer.get()->GetPosition().lock(), mPlayer.get()->GetSprite()->getRotation(), BULLET_ID(ALLIED)));
+                    projectiles.push_back(bullet);
+                }
             }
         }
 
-        if (event.type == sf::Event::KeyReleased) {
-            std::cout << "Key released." << std::endl;
-            switch (event.key.code) {
-            case sf::Keyboard::W:
-                animFlags.upPressed = false;
-                break;
-            case sf::Keyboard::S:
-                animFlags.downPressed = false;
-                break;
-            case sf::Keyboard::A:
-                animFlags.leftPressed = false;
-                break;
-            case sf::Keyboard::D:
-                animFlags.rightPressed = false;
-                break;
-            default:
-                break;
-            }
+        //Mueve al jugador dependiendo de las banderas que se encuentren encedidas.
+        if (animFlags.upPressed) {
+            mPlayer.get()->MoveObject(sf::Vector2f(0.f, -mPlayer.get()->GetSpeed() * *mElapsed));
         }
-
-        if (event.type == sf::Event::MouseButtonPressed) {
-            if (event.mouseButton.button == sf::Mouse::Left) {
-                std::shared_ptr<Bullet> bullet(new Bullet(mRenderWindow, mElapsed, *mPlayer.get()->GetPosition().lock(), mPlayer.get()->GetSprite()->getRotation(), BULLET_ID(ALLIED)));
-                projectiles.push_back(bullet);
-            }
+        if (animFlags.downPressed) {
+            mPlayer.get()->MoveObject(sf::Vector2f(0.f, mPlayer.get()->GetSpeed() * *mElapsed));
         }
-	}
-
-    //Mueve al jugador dependiendo de las banderas que se encuentren encedidas.
-    if (animFlags.upPressed) {
-        mPlayer.get()->MoveObject(sf::Vector2f(0.f, -mPlayer.get()->GetSpeed() * *mElapsed));
+        if (animFlags.leftPressed) {
+            mPlayer.get()->MoveObject(sf::Vector2f(-mPlayer.get()->GetSpeed() * *mElapsed, 0.f));
+        }
+        if (animFlags.rightPressed) {
+            mPlayer.get()->MoveObject(sf::Vector2f(mPlayer.get()->GetSpeed() * *mElapsed, 0.f));
+        }
     }
-    if (animFlags.downPressed) {
-        mPlayer.get()->MoveObject(sf::Vector2f(0.f, mPlayer.get()->GetSpeed() * *mElapsed));
-    }
-    if (animFlags.leftPressed) {
-        mPlayer.get()->MoveObject(sf::Vector2f(-mPlayer.get()->GetSpeed() * *mElapsed, 0.f));
-    }
-    if (animFlags.rightPressed) {
-        mPlayer.get()->MoveObject(sf::Vector2f(mPlayer.get()->GetSpeed() * *mElapsed, 0.f));
-    }
+	
 }
 
 /************************************
@@ -217,13 +225,13 @@ void Game::RestartGame() {
     projectiles.clear();
     enemies.clear();
 
-    std::shared_ptr<Enemy> enemyPtr(new Enemy(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(100, 100), ENEMY_TYPE(CHASER)));
+    std::shared_ptr<Enemy> enemyPtr(std::make_shared<Enemy>(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(100, 100), ENEMY_TYPE(CHASER)));
     enemies.push_back(enemyPtr);
 
-    std::shared_ptr<Enemy> enemyPtr2(new Enemy(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(400, 100), ENEMY_TYPE(CHASER)));
+    std::shared_ptr<Enemy> enemyPtr2(std::make_shared<Enemy>(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(400, 100), ENEMY_TYPE(CHASER)));
     enemies.push_back(enemyPtr2);
 
-    std::shared_ptr<Enemy> enemyPtr3(new Enemy(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(700, 100), ENEMY_TYPE(CHASER)));
+    std::shared_ptr<Enemy> enemyPtr3(std::make_shared<Enemy>(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(700, 100), ENEMY_TYPE(CHASER)));
     enemies.push_back(enemyPtr3);
 }
 
@@ -235,7 +243,12 @@ void Game::RestartGame() {
 * @details:  Sin detalles.
 *************************************/
 void Game::CheckProjectileCollision() {
-    sf::View view = mRenderWindow->getView();
+    sf::View view;
+
+    if (!mRenderWindow.expired()) {
+        std::shared_ptr<sf::RenderWindow> windowPtr = mRenderWindow.lock();
+        view = windowPtr->getView();
+    }
     sf::FloatRect viewRect(view.getCenter() - view.getSize() / 2.f, view.getSize());
 
     //Iteración de proyectiles.

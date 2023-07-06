@@ -34,9 +34,9 @@ public:
 	void RestartCooldown();
 	
 
+	int GetSpeed();
 	inline sf::Sprite* GetSprite() { return &mSprite; }
 	inline sf::Vector2f GetPosition() { return mPosition; }
-	inline int GetSpeed() { return MAX_SPEED; }
 	inline int GetHealth() { return mHealth; }
 	inline float GetCooldownTime() { return cooldownTimer.getElapsedTime().asMilliseconds(); }
 	/*inline sf::FloatRect GetHitbox() { return mHitbox; }*/
@@ -49,12 +49,15 @@ private:
 	sf::Clock cooldownTimer;
 	//sf::FloatRect mHitbox;
 	int mHealth;
-	int MAX_HEALTH = 100;
-	int MAX_SPEED = 500;
+	const int MAX_HEALTH_CHASER = 100;
+	const int MAX_SPEED_CHASER = 250;
+	const int MAX_HEALTH_SHOOTER = 60;
+	const int MAX_SPEED_SHOOTER = 150;
+	
 	const float PI = 3.1416;
 	ENEMY_TYPE mType;
 
-	std::shared_ptr<sf::Vector2f> mPlayerPos;
-	std::shared_ptr<sf::RenderWindow> mWindow;
-	std::shared_ptr<float> mElapsed;
+	std::weak_ptr<sf::Vector2f> mPlayerPos;
+	std::weak_ptr<sf::RenderWindow> mWindow;
+	std::weak_ptr<float> mElapsed;
 };

@@ -14,9 +14,9 @@ Enemy::Enemy(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<float> elapse
 	}
 	mSprite.setTexture(mTexture);
 
-	mWindow = window.lock();
-	mElapsed = elapsed.lock();
-	mPlayerPos = playerPos.lock();
+	mWindow = window;
+	mElapsed = elapsed;
+	mPlayerPos = playerPos;
 
 	sf::Vector2f enemyScale(2.0f, 2.0f);
 	sf::FloatRect spriteSize = this->GetSprite()->getGlobalBounds();
@@ -27,15 +27,13 @@ Enemy::Enemy(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<float> elapse
 	mType = type;
 
 	if (mType == ENEMY_TYPE::CHASER) {
-		MAX_HEALTH = 100;
-		MAX_SPEED = 200;
+		this->SetHealth(MAX_HEALTH_CHASER);
 	}
 	else if (mType == ENEMY_TYPE::SHOOTER) {
-		MAX_HEALTH = 60;
-		MAX_SPEED = 100;
+		this->SetHealth(MAX_HEALTH_SHOOTER);
 	}
 
-	this->SetHealth(MAX_HEALTH);
+	
 
 	//Hitbox arbitraria, falta definir.
 	//mHitbox = sf::FloatRect(pos.x-11, pos.y-8, 15.f, 14.f);
@@ -118,6 +116,22 @@ void Enemy::SetHealth(int hp) {
 }
 
 /************************************
+* @method:   GetSpeed
+* @access:   public
+* @return    int
+* @brief:    Este método regresa la velocidad del enemigo dependiendo su tipo.
+* @details:  Sin comentarios.
+*************************************/
+int Enemy::GetSpeed() {
+	if (mType == ENEMY_TYPE::CHASER) {
+		return MAX_SPEED_CHASER;
+	}
+	else if (mType == ENEMY_TYPE::SHOOTER) {
+		return MAX_SPEED_SHOOTER;
+	}
+}
+
+/************************************
 * @method:   TakeDamage
 * @access:   public
 * @return    void
@@ -147,11 +161,17 @@ void Enemy::RestartCooldown() {
 * @details:  Sin comentarios.
 *************************************/
 void Enemy::ChasePlayer() {
-	this->SetRotation(atan2f(mPlayerPos.get()->y - mPosition.y, mPlayerPos.get()->x - mPosition.x) * (180 / PI));
-	sf::Vector2f direction;
-	direction.x = cos((PI / 180) * mSprite.getRotation()) * MAX_SPEED * *mElapsed;
-	direction.y = sin((PI / 180) * mSprite.getRotation()) * MAX_SPEED * *mElapsed;
-	this->MoveObject(direction);
+	if (!mPlayerPos.expired() && !mElapsed.expired()) {
+		std::shared_ptr<sf::Vector2f> playerPosPtr = mPlayerPos.lock();
+		std::shared_ptr<float> elapsedPtr = mElapsed.lock();
+
+		this->SetRotation(atan2f(playerPosPtr->y - mPosition.y, playerPosPtr->x - mPosition.x) * (180 / PI));
+		sf::Vector2f direction;
+		direction.x = cos((PI / 180) * mSprite.getRotation()) * MAX_SPEED_CHASER * *elapsedPtr;
+		direction.y = sin((PI / 180) * mSprite.getRotation()) * MAX_SPEED_CHASER * *elapsedPtr;
+		this->MoveObject(direction);
+	}
+	
 }
 
 /************************************

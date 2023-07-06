@@ -13,8 +13,8 @@ Bullet::Bullet(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<float> elap
 
 	}
 
-	mWindow = window.lock();
-	mElapsed = elapsed.lock();
+	mWindow = window;
+	mElapsed = elapsed;
 
 	mSprite.setTexture(mTexture);
 	mSprite.setTextureRect(sf::IntRect(256, 128, 16, 16));
@@ -39,10 +39,14 @@ Bullet::~Bullet() {
 * @details:  Sin comentarios.
 *************************************/
 void Bullet::Update() {
-	sf::Vector2f direction;
-	direction.x = cos((PI / 180) * mSprite.getRotation()) * MAX_SPEED * *mElapsed;
-	direction.y = sin((PI / 180) * mSprite.getRotation()) * MAX_SPEED * *mElapsed;
-	this->MoveObject(direction);
+	if (!mElapsed.expired()) {
+		sf::Vector2f direction;
+		std::shared_ptr<float> elapsedPtr = mElapsed.lock();
+		direction.x = cos((PI / 180) * mSprite.getRotation()) * MAX_SPEED * *elapsedPtr;
+		direction.y = sin((PI / 180) * mSprite.getRotation()) * MAX_SPEED * *elapsedPtr;
+		this->MoveObject(direction);
+	}
+	
 }
 
 /************************************

@@ -39,8 +39,8 @@ private:
 	sf::Texture mTexture;
 	sf::Sprite mSprite;
 	sf::Vector2f mPosition;
-	std::shared_ptr<sf::RenderWindow> mWindow;
-	std::shared_ptr<float> mElapsed;
+	std::weak_ptr<sf::RenderWindow> mWindow;
+	std::weak_ptr<float> mElapsed;
 	BULLET_ID mID;
 	const int MAX_SPEED = 1000;
 	const float PI = 3.1416;

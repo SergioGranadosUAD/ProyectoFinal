@@ -43,7 +43,7 @@ public:
 
 private:
 	std::shared_ptr<Window> mWindow;
-	std::shared_ptr<sf::RenderWindow> mRenderWindow;
+	std::weak_ptr<sf::RenderWindow> mRenderWindow;
 	std::unique_ptr<Player> mPlayer;
 	sf::Clock mClock;
 	std::shared_ptr<float> mElapsed;

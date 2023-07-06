@@ -30,7 +30,7 @@ private:
 	sf::Texture mTexture;
 	sf::Sprite mSprite;
 	std::shared_ptr<sf::Vector2f> mPosition;
-	std::shared_ptr<sf::RenderWindow> mWindow;
+	std::weak_ptr<sf::RenderWindow> mWindow;
 	sf::Vector2f mCursorPos;
 	int mHealth;
 	const int MAX_HEALTH = 100;

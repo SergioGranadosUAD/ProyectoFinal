@@ -42,6 +42,6 @@ private:
 	std::weak_ptr<sf::RenderWindow> mWindow;
 	std::weak_ptr<float> mElapsed;
 	BULLET_ID mID;
-	const int MAX_SPEED = 1000;
-	const float PI = 3.1416;
+	const int MAX_SPEED = 700;
+	const double PI = 3.1416;
 };

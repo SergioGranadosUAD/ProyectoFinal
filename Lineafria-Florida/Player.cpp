@@ -7,28 +7,41 @@
 * @brief:    Constructor de la clase Player, carga la textura y asigna los valores iniciales del jugador.
 * @details:  Sin comentarios.
 *************************************/
-Player::Player(std::weak_ptr<sf::RenderWindow> window) {
+Player::Player(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<sf::View> view) {
 	if (!mTexture.loadFromFile("Resources/PlayerAim1.png")) {
 
 	}
 	mSprite.setTexture(mTexture);
 
     mWindow = window;
+    mView = view;
     mPosition = std::make_shared<sf::Vector2f>(0.f, 0.f);
 
     sf::Vector2f playerPos;
-    sf::Vector2f playerScale(2.0f, 2.0f);
+    sf::Vector2f playerScale(1.0f, 1.0f);
     if (!mWindow.expired()) {
         std::shared_ptr<sf::RenderWindow> windowPtr = mWindow.lock();
         playerPos.x = windowPtr->getSize().x * .5f;
         playerPos.y = windowPtr->getSize().y * .5f;
     }
+
+    
     
     sf::FloatRect spriteSize = this->GetSprite()->getGlobalBounds();
     this->GetSprite()->setOrigin(spriteSize.width * .5f, spriteSize.height * .5f);
     this->SetPosition(playerPos);
     this->SetScale(playerScale);
     this->SetHealth(MAX_HEALTH);
+
+    sf::RectangleShape rect{ sf::Vector2f(spriteSize.height, spriteSize.height) };
+    rect.setOrigin(spriteSize.height*.5f, spriteSize.height*.5f);
+    rect.setPosition(playerPos);
+    rect.setFillColor(sf::Color::Transparent);
+    rect.setOutlineThickness(1.f);
+    rect.setOutlineColor(sf::Color::Red);
+    this->SetHitbox(rect);
+    //this->SetHitbox({ -spriteSize.width * .5f, -spriteSize.height * .5f, 14.f, spriteSize.height });
+
 }
 
 /************************************
@@ -39,15 +52,23 @@ Player::Player(std::weak_ptr<sf::RenderWindow> window) {
 * @details:  Sin comentarios.
 *************************************/
 void Player::Update() {
-    CheckPlayerBounds();
-
     if (!mWindow.expired()) {
         std::shared_ptr<sf::RenderWindow> windowPtr = mWindow.lock();
-        mCursorPos = sf::Vector2f(sf::Mouse::getPosition(*windowPtr));
+        sf::Vector2i pixelPos = sf::Mouse::getPosition(*windowPtr);
+        mCursorPos = windowPtr->mapPixelToCoords(pixelPos);
+
+        if (!mView.expired()) {
+            std::shared_ptr<sf::View> viewPtr = mView.lock();
+            viewPtr->setCenter(*mPosition);
+            windowPtr->setView(*viewPtr);
+        }
+
+        
     }
+
+    mHitbox.setPosition(*mPosition);
     
     SetRotation(atan2f(mCursorPos.y - mPosition->y, mCursorPos.x - mPosition->x) * (180 / PI));
-
 }
 
 /************************************
@@ -108,6 +129,28 @@ void Player::SetHealth(int hp) {
 }
 
 /************************************
+* @method:   SetHitbox
+* @access:   public
+* @return    void
+* @brief:    Este método establece los límites del hitbox de una entidad.
+* @details:  Sin comentarios.
+*************************************/
+void Player::SetHitbox(const sf::RectangleShape& hitbox) {
+    mHitbox = hitbox;
+}
+
+/************************************
+* @method:   AddVelocity
+* @access:   public
+* @return    void
+* @brief:    Este método establece la velocidad que tendrá la entidad en un frame.
+* @details:  Sin comentarios.
+*************************************/
+void Player::AddVelocity(const sf::Vector2f& vel) {
+    mVelocity += vel;
+}
+
+/************************************
 * @method:   TakeDamage
 * @access:   public
 * @return    void
@@ -122,28 +165,47 @@ void Player::TakeDamage(int damage) {
 * @method:   CheckPlayerBounds
 * @access:   public
 * @return    void
-* @brief:    Este método revisa si el jugador se intenta salir de la ventana, y lo detiene de ser así.
+* @brief:    Este método revisa si el jugador colisiona con un muro, y de ser así, lo detiene.
 * @details:  Sin comentarios.
 *************************************/
-void Player::CheckPlayerBounds() {
-    if (!mWindow.expired()) {
-        std::shared_ptr<sf::RenderWindow> windowPtr = mWindow.lock();
-        if (mPosition.get()->x < 0) {
-            //SetPosition(sf::Vector2f(window->getSize().x, mPosition.y));
-            SetPosition(sf::Vector2f(0.f, mPosition.get()->y));
-        }
-        if (mPosition.get()->x > (int)windowPtr->getSize().x) {
-            //SetPosition(sf::Vector2f(0.f, mPosition.y));
-            SetPosition(sf::Vector2f(windowPtr->getSize().x, mPosition.get()->y));
-        }
-        if (mPosition.get()->y < 0) {
-            //SetPosition(sf::Vector2f(mPosition.x, window->getSize().y));
-            SetPosition(sf::Vector2f(mPosition.get()->x, 0.f));
-        }
-        if (mPosition.get()->y > (int)windowPtr->getSize().y) {
-            //SetPosition(sf::Vector2f(mPosition.x, 0.f));
-            SetPosition(sf::Vector2f(mPosition.get()->x, windowPtr->getSize().y));
-        }
+void Player::CheckPlayerBounds(const sf::FloatRect& objectBounds) {
+    sf::FloatRect playerBounds = mHitbox.getGlobalBounds();
+    if (playerBounds.top < objectBounds.top
+        && playerBounds.top + playerBounds.height < objectBounds.top + objectBounds.height
+        && playerBounds.left < objectBounds.left + objectBounds.width
+        && playerBounds.left + playerBounds.width > objectBounds.left) {
+        mVelocity.y = 0;
+        this->SetPosition(sf::Vector2f(playerBounds.left, objectBounds.top - playerBounds.height));
+    } else if (playerBounds.top > objectBounds.top
+        && playerBounds.top + playerBounds.height > objectBounds.top + objectBounds.height
+        && playerBounds.left < objectBounds.left + objectBounds.width
+        && playerBounds.left + playerBounds.width > objectBounds.left) {
+        mVelocity.y = 0;
+        this->SetPosition(sf::Vector2f(playerBounds.left, objectBounds.top + objectBounds.height));
+    } else if (playerBounds.left < objectBounds.left
+        && playerBounds.left + playerBounds.width < objectBounds.left + objectBounds.width
+        && playerBounds.top < objectBounds.top + objectBounds.height
+        && playerBounds.top + playerBounds.height > objectBounds.top) {
+        mVelocity.x = 0;
+        this->SetPosition(sf::Vector2f(objectBounds.left - playerBounds.width, playerBounds.top));
     }
-    
+    else if (playerBounds.left > objectBounds.left
+        && playerBounds.left + playerBounds.width > objectBounds.left + objectBounds.width
+        && playerBounds.top < objectBounds.top + objectBounds.height
+        && playerBounds.top + playerBounds.height > objectBounds.top) {
+        mVelocity.x = 0;
+        this->SetPosition(sf::Vector2f(objectBounds.left + objectBounds.width, playerBounds.top));
+    }
+}
+
+/************************************
+* @method:   ResetVelocity
+* @access:   public
+* @return    void
+* @brief:    Este método reinicia la velocidad de la entidad para que se vuelva a calcular el siguiente frame.
+* @details:  Sin comentarios.
+*************************************/
+void Player::ResetVelocity() {
+    mVelocity.x = 0;
+    mVelocity.y = 0;
 }

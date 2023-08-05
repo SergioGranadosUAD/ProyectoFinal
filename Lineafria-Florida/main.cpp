@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "Application.h"
 #include <memory>
 
 /************************************
@@ -9,10 +10,11 @@
 * @details:  Sin comentarios.
 *************************************/
 int main() {
-	std::unique_ptr<Game> gameLoop(new Game);
-	while (!gameLoop.get()->GetWindow().lock()->IsDone()) {
-		gameLoop->HandleInput();
-		gameLoop->Update();
-		gameLoop->Render();
+	std::unique_ptr<Application> gameApp(new Application);
+	std::shared_ptr<Window> window = gameApp->GetWindow().lock();
+	while (!window->IsDone()) {
+		gameApp->HandleInput();
+		gameApp->Update();
+		gameApp->Render();
 	}
 }

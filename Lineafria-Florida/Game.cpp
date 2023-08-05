@@ -7,27 +7,50 @@
 * @brief:    Constructor de la clase Game, establece los valores que llevará el juego y crea los elementos necesarios para su funcionamiento.
 * @details:  Sin detalles.
 *************************************/
-Game::Game() :
-	mWindow(std::make_shared<Window>("Game Window", sf::Vector2u(800, 600))), mElapsed(std::make_shared<float>(0)) {
 
+Game::Game(std::weak_ptr<Window> window, std::weak_ptr<float> elapsed) {
+    mWindow = window.lock();
     mRenderWindow = mWindow->GetMWindow();
-    mPlayer = std::make_unique<Player>(mRenderWindow);
+    mElapsed = elapsed.lock();
+    mFloorLayer = std::make_unique<TileMap>();
+    mWallLayer = std::make_unique<TileMap>();
+
+    LevelData level = LoadLevel("Level1");
+
+    if (!mFloorLayer->Load("TileSet.png", sf::Vector2u(32, 32), level.layerTiles, level.width, level.height)) {
+        std::cout << "Failed to load floor layer" << std::endl;
+    }
+    if (!mWallLayer->Load("TileSet.png", sf::Vector2u(32, 32), level.layerWalls, level.width, level.height)) {
+        std::cout << "Failed to load wall layer" << std::endl;
+    }
+
+    
+    mFloorLayer->setPosition(sf::Vector2f(level.spawnPos));
+    mFloorLayer->setOrigin(sf::Vector2f(level.width * 16, level.height * 16));
+    mWallLayer->setPosition(sf::Vector2f(level.spawnPos));
+    mWallLayer->setOrigin(sf::Vector2f(level.width * 16, level.height * 16));
 
     if (!mRenderWindow.expired()) {
         std::shared_ptr<sf::RenderWindow> windowPtr = mRenderWindow.lock();
         windowPtr->setVerticalSyncEnabled(true);
         windowPtr->setKeyRepeatEnabled(false);
+        mView = std::make_shared<sf::View>(windowPtr->getView());
+        mView->setCenter(sf::Vector2f(windowPtr->getSize().x*.5f, windowPtr->getSize().y*.5f));
+        mView->zoom(.40f);
+        windowPtr->setView(*mView);
     }
 
+    mPlayer = std::make_unique<Player>(mRenderWindow, mView);
+    
 
-    std::shared_ptr<Enemy> enemyPtr(std::make_shared<Enemy>(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(100, 100), ENEMY_TYPE(CHASER)));
+    /*std::shared_ptr<Enemy> enemyPtr(std::make_shared<Enemy>(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(100, 100), ENEMY_TYPE(CHASER)));
     enemies.push_back(enemyPtr);
 
     std::shared_ptr<Enemy> enemyPtr2(std::make_shared<Enemy>(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(400, 100), ENEMY_TYPE(CHASER)));
     enemies.push_back(enemyPtr2);
 
     std::shared_ptr<Enemy> enemyPtr3(std::make_shared<Enemy>(mRenderWindow, mElapsed, mPlayer.get()->GetPosition(), sf::Vector2f(700, 100), ENEMY_TYPE(CHASER)));
-    enemies.push_back(enemyPtr3);
+    enemies.push_back(enemyPtr3);*/
 };
 
 Game::~Game(){}
@@ -97,27 +120,33 @@ void Game::HandleInput(){
 
             if (event.type == sf::Event::MouseButtonPressed) {
                 if (event.mouseButton.button == sf::Mouse::Left) {
-                    std::shared_ptr<Bullet> bullet(new Bullet(mRenderWindow, mElapsed, *mPlayer.get()->GetPosition().lock(), mPlayer.get()->GetSprite()->getRotation(), BULLET_ID(ALLIED)));
+                    std::shared_ptr<Bullet> bullet(new Bullet(mRenderWindow, mElapsed, *mPlayer->GetPosition().lock(), mPlayer.get()->GetSprite()->getRotation(), BULLET_ID(ALLIED)));
                     projectiles.push_back(bullet);
                 }
             }
         }
 
+        mPlayer->ResetVelocity();
         //Mueve al jugador dependiendo de las banderas que se encuentren encedidas.
         if (animFlags.upPressed) {
-            mPlayer.get()->MoveObject(sf::Vector2f(0.f, -mPlayer.get()->GetSpeed() * *mElapsed));
+            mPlayer->AddVelocity(sf::Vector2f(0.f, -mPlayer->GetSpeed() * *mElapsed));
         }
         if (animFlags.downPressed) {
-            mPlayer.get()->MoveObject(sf::Vector2f(0.f, mPlayer.get()->GetSpeed() * *mElapsed));
+            mPlayer->AddVelocity(sf::Vector2f(0.f, mPlayer->GetSpeed() * *mElapsed));
         }
         if (animFlags.leftPressed) {
-            mPlayer.get()->MoveObject(sf::Vector2f(-mPlayer.get()->GetSpeed() * *mElapsed, 0.f));
+            mPlayer->AddVelocity(sf::Vector2f(-mPlayer->GetSpeed() * *mElapsed, 0.f));
         }
         if (animFlags.rightPressed) {
-            mPlayer.get()->MoveObject(sf::Vector2f(mPlayer.get()->GetSpeed() * *mElapsed, 0.f));
+            mPlayer->AddVelocity(sf::Vector2f(mPlayer->GetSpeed() * *mElapsed, 0.f));
         }
+        mPlayer->MoveObject(mPlayer->GetVelocity());
     }
 	
+    if (!mRenderWindow.expired()) {
+        std::shared_ptr<sf::RenderWindow> windowPtr = mRenderWindow.lock();
+        windowPtr->setView(*mView);
+    }
 }
 
 /************************************
@@ -130,7 +159,7 @@ void Game::HandleInput(){
 void Game::Update() {
 
     //Actualización de todas las entidades en el juego.
-    mPlayer.get()->Update();
+    mPlayer->Update();
     for (auto bullet : projectiles) {
         bullet->Update();
     }
@@ -138,13 +167,22 @@ void Game::Update() {
         enemy->Update();
 
         //Ataque cuerpo a cuerpo hacia el jugador.
-        if (enemy->GetSprite()->getGlobalBounds().intersects(mPlayer.get()->GetSprite()->getGlobalBounds()) && enemy->GetCooldownTime() > 2000) {
+        if (enemy->GetSprite()->getGlobalBounds().intersects(mPlayer->GetHitbox()) && enemy->GetCooldownTime() > 2000) {
             std::cout << "Melee attack on player." << std::endl;
             mPlayer.get()->TakeDamage(20);
             enemy->RestartCooldown();
         }
     }
 
+    for (auto wall : mWallCollisions) {
+        sf::FloatRect wallRect = wall->getGlobalBounds();
+        if (mPlayer->GetHitbox().intersects(wallRect)) {
+            std::cout << "Is intersecting wall" << std::endl;
+            mPlayer->CheckPlayerBounds(wallRect);
+        }
+    }
+
+    
     CheckProjectileCollision();
 
     //Se verifica si el jugador sigue vivo, de lo contrario reinicia el juego.
@@ -153,6 +191,7 @@ void Game::Update() {
         RestartGame();
     }
 
+    
 	RestartClock();
 }
 
@@ -164,15 +203,23 @@ void Game::Update() {
 * @details:  Sin detalles.
 *************************************/
 void Game::Render() {
-	mWindow.get()->BeginDraw();
-	mWindow.get()->Draw(*mPlayer.get()->GetSprite());
-    for (auto bullet : projectiles) {
-        mWindow.get()->Draw(*bullet.get()->GetSprite());
+	mWindow->BeginDraw();
+    mWindow->Draw(*mFloorLayer);
+    mWindow->Draw(*mWallLayer);
+	mWindow->Draw(*mPlayer->GetSprite());
+    mWindow->Draw(mPlayer->mHitbox);
+    for (auto& bullet : projectiles) {
+        mWindow->Draw(*bullet.get()->GetSprite());
     }
-    for (auto enemy : enemies) {
-        mWindow.get()->Draw(*enemy.get()->GetSprite());
+    for (auto& enemy : enemies) {
+        mWindow->Draw(*enemy.get()->GetSprite());
     }
-	mWindow.get()->EndDraw();
+
+    for (auto& coll : mWallCollisions) {
+        mWindow->Draw(*coll);
+    }
+
+	mWindow->EndDraw();
 }
 
 /************************************
@@ -218,7 +265,7 @@ std::weak_ptr<Window> Game::GetWindow() {
 *************************************/
 void Game::RestartGame() {
     mPlayer.reset();
-    mPlayer = std::make_unique<Player>(mRenderWindow);
+    mPlayer = std::make_unique<Player>(mRenderWindow, mView);
     mClock.restart();
     *mElapsed = 0.f;
     animFlags = {};
@@ -243,13 +290,8 @@ void Game::RestartGame() {
 * @details:  Sin detalles.
 *************************************/
 void Game::CheckProjectileCollision() {
-    sf::View view;
 
-    if (!mRenderWindow.expired()) {
-        std::shared_ptr<sf::RenderWindow> windowPtr = mRenderWindow.lock();
-        view = windowPtr->getView();
-    }
-    sf::FloatRect viewRect(view.getCenter() - view.getSize() / 2.f, view.getSize());
+    sf::FloatRect viewRect(mView->getCenter() - mView->getSize() / 2.f, mView->getSize());
 
     //Iteración de proyectiles.
     for (int i = 0; i < projectiles.size(); ++i) {
@@ -261,7 +303,7 @@ void Game::CheckProjectileCollision() {
         }
         else {
             //Se comprueba si un proyectil es enemigo y colisiona con el jugador.
-            if (projectiles[i].get()->GetSprite()->getGlobalBounds().intersects(mPlayer.get()->GetSprite()->getGlobalBounds()) && projectiles[i].get()->GetID() == BULLET_ID::ENEMY) {
+            if (projectiles[i].get()->GetSprite()->getGlobalBounds().intersects(mPlayer->GetHitbox()) && projectiles[i].get()->GetID() == BULLET_ID::ENEMY) {
                 projectiles.erase(projectiles.begin() + i);
                 mPlayer.get()->TakeDamage(20);
                 break;
@@ -281,4 +323,47 @@ void Game::CheckProjectileCollision() {
             }
         }
     }
+}
+
+LevelData Game::LoadLevel(const std::string& levelName) {
+    try {
+        LevelData levelData;
+        json data;
+        std::ifstream levelFile{ "Levels/" + levelName + ".json" };
+
+        if (!levelFile) {
+            std::cout << "Failed to open file " << levelName << std::endl;
+        }
+
+        data = json::parse(levelFile);
+
+
+        levelData.spawnPos.x = data[levelName]["spawnPosX"];
+        levelData.spawnPos.y = data[levelName]["spawnPosY"];
+        levelData.width = data[levelName]["mapWidth"];
+        levelData.height = data[levelName]["mapHeight"];
+
+        for (int i : data[levelName]["floorLayer"]) {
+            levelData.layerTiles.push_back(i);
+        }
+
+        for (int i : data[levelName]["wallLayer"]) {
+            levelData.layerWalls.push_back(i);
+        }
+
+        for (auto obj : data[levelName]["hitboxes"]) {
+            std::shared_ptr<sf::RectangleShape> shape = std::make_shared<sf::RectangleShape>(sf::Vector2f(obj["width"], obj["height"]));
+            sf::FloatRect shapeBounds = shape->getGlobalBounds();
+            shape->setOrigin(shapeBounds.width / 2, shapeBounds.height / 2);
+            shape->setPosition(sf::Vector2f(levelData.spawnPos.x + obj["posX"], levelData.spawnPos.y + obj["posY"]));
+
+            mWallCollisions.push_back(shape);
+        }
+
+        return levelData;
+    }
+    catch (json::type_error& e) {
+        std::cerr << e.what() << std::endl;
+    }
+    
 }

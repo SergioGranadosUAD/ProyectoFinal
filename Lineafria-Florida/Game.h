@@ -1,10 +1,16 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include <fstream>
+#include "json.hpp"
 #include "Window.h"
 #include "Player.h"
 #include "Bullet.h"
 #include "Enemy.h"
+#include "PauseMenu.h"
+#include "TileMap.h"
+
+using nlohmann::json;
 
 /************************************
 * @class:    AnimFlags
@@ -19,6 +25,15 @@ struct AnimFlags {
 	bool rightPressed = false;
 };
 
+struct LevelData {
+	sf::Vector2f spawnPos;
+	int width = 0;
+	int height = 0;
+	std::vector<int> layerTiles;
+	std::vector<int> layerWalls;
+	std::vector<sf::RectangleShape> layerWallsCol;
+};
+
 /************************************
 * @class:    Game
 * @access:   public
@@ -28,7 +43,7 @@ struct AnimFlags {
 *************************************/
 class Game {
 public:
-	Game();
+	Game(std::weak_ptr<Window> window, std::weak_ptr<float> elapsed);
 	~Game();
 
 	void HandleInput();
@@ -37,18 +52,29 @@ public:
 	void RestartClock();
 	void CheckProjectileCollision();
 	void RestartGame();
+	LevelData LoadLevel(const std::string& levelName);
 
 	std::weak_ptr<float> GetElapsed();
 	std::weak_ptr<Window> GetWindow();
+
+	inline bool IsPaused() { return mIsPaused; }
 
 private:
 	std::shared_ptr<Window> mWindow;
 	std::weak_ptr<sf::RenderWindow> mRenderWindow;
 	std::unique_ptr<Player> mPlayer;
+	std::shared_ptr<sf::View> mView;
+	std::unique_ptr<PauseMenu> mPauseMenu;
+	std::unique_ptr<TileMap> mFloorLayer;
+	std::unique_ptr<TileMap> mWallLayer;
 	sf::Clock mClock;
 	std::shared_ptr<float> mElapsed;
 	AnimFlags animFlags;
 	std::vector<std::shared_ptr<Bullet>> projectiles;
 	std::vector<std::shared_ptr<Enemy>> enemies;
+	std::vector<std::shared_ptr<sf::RectangleShape>> mWallCollisions;
+	bool mIsPaused;
+	bool mWinCondition;
 
+	std::vector<sf::RectangleShape> test;
 };

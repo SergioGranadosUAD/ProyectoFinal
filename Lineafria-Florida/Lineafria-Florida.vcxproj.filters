@@ -16,6 +16,12 @@
     <Filter Include="Archivos de recursos\Sprites">
       <UniqueIdentifier>{ce15f639-098a-4cde-a0dd-bd8125206546}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Archivos de recursos\Font">
+      <UniqueIdentifier>{667827f2-4e57-4dd5-8c3b-88fe40682437}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de recursos\Levels">
+      <UniqueIdentifier>{21566787-ff14-4671-a7aa-7fd239c022ec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -39,6 +45,18 @@
     <ClCompile Include="Enemy.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
+    <ClCompile Include="Application.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="MainMenu.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="PauseMenu.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
+    <ClCompile Include="TileMap.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -59,6 +77,18 @@
     <ClInclude Include="Enemy.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="Application.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="MainMenu.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="PauseMenu.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="TileMap.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\PlayerAim1.png">
@@ -76,5 +106,18 @@
     <Image Include="Resources\EnemyAim.png">
       <Filter>Archivos de recursos\Sprites</Filter>
     </Image>
+    <Image Include="Resources\TileSet.png">
+      <Filter>Archivos de recursos\Sprites</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="Font\Pixel.ttf">
+      <Filter>Archivos de recursos\Font</Filter>
+    </Font>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Levels\Level1.json">
+      <Filter>Archivos de recursos\Levels</Filter>
+    </None>
   </ItemGroup>
 </Project>

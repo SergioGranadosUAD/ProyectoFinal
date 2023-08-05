@@ -21,7 +21,7 @@ Bullet::Bullet(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<float> elap
 	sf::FloatRect spriteSize = this->GetSprite()->getGlobalBounds();
 	this->GetSprite()->setOrigin(spriteSize.width * .5f, spriteSize.height * .5f);
 	this->SetPosition(pos);
-	this->SetScale(sf::Vector2f(2.0f, 2.0f));
+	this->SetScale(sf::Vector2f(1.0f, .5f));
 	this->SetRotation(angle);
 	mID = id;
 	std::cout << "Projectile created." << std::endl;

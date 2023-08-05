@@ -18,7 +18,7 @@ Enemy::Enemy(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<float> elapse
 	mElapsed = elapsed;
 	mPlayerPos = playerPos;
 
-	sf::Vector2f enemyScale(2.0f, 2.0f);
+	sf::Vector2f enemyScale(1.0f, 1.0f);
 	sf::FloatRect spriteSize = this->GetSprite()->getGlobalBounds();
 	this->GetSprite()->setOrigin(spriteSize.width * .5f, spriteSize.height * .5f);
 	this->SetPosition(pos);

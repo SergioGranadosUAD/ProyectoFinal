@@ -9,7 +9,7 @@
 * @details:  Cuenta con los aspectos base de cualquier entidad como su textura, sprite y posición, así como un conjunto de métodos para su actualización y
 *			 la modificación de sus valores.
 *************************************/
-class Entity {
+class Entity: public sf::Sprite {
 public:
 	Entity();
 	~Entity();
@@ -18,6 +18,7 @@ public:
 	virtual void SetPosition(sf::Vector2f pos) = 0;
 	virtual void SetScale(sf::Vector2f scale) = 0;
 	virtual void SetRotation(float angle) = 0;
+
 	virtual void Update() = 0;
 
 private:

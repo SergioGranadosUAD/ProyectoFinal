@@ -1,9 +1,19 @@
 #include "Application.h"
 
 Application::Application():
-	mWindow(std::make_shared<Window>("Lineafria Florida", sf::Vector2u(1360, 768))), mElapsed(std::make_shared<float>(0)), mState(GAME_STATE::MENU), mGame(nullptr) {
+	mWindow(std::make_shared<Window>("Curvafria Florida", sf::Vector2u(1360, 768))), mElapsed(std::make_shared<float>(0)), mState(GAME_STATE::MENU), mGame(nullptr) {
 	mRenderWindow = mWindow->GetMWindow();
+	if (!mRenderWindow.expired()) {
+		std::shared_ptr<sf::RenderWindow> windowPtr = mRenderWindow.lock();
+		windowPtr->setVerticalSyncEnabled(true);
+		windowPtr->setKeyRepeatEnabled(false);
+		windowPtr->setMouseCursorVisible(false);
+	}
 	mMainMenu = std::make_unique<MainMenu>(mWindow, mRenderWindow);
+}
+
+Application::~Application() {
+
 }
 
 void Application::HandleInput() {
@@ -21,13 +31,19 @@ void Application::Update() {
 	case GAME_STATE::MENU:
 		mMainMenu->Update();
 		if(mMainMenu->GameStarted()){
-			mGame = std::make_unique<Game>(mWindow, mElapsed);
+			mGame = std::make_unique<Game>(mWindow, mElapsed, "Level1");
 			mState = GAME_STATE::PLAYING;
 			mMainMenu.reset(nullptr);
 		}
 		break;
 	case GAME_STATE::PLAYING:
 		mGame->Update();
+		if (mGame->GameFinished()) {
+			mGame->ResetView();
+			mMainMenu = std::make_unique<MainMenu>(mWindow, mRenderWindow);
+			mState = GAME_STATE::MENU;
+			mGame.reset(nullptr);
+		}
 	}
 }
 void Application::Render() {

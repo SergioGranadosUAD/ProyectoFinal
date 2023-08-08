@@ -23,18 +23,23 @@ enum BULLET_ID {
 class Bullet : public Entity {
 public:
 	Bullet(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<float> elapsed, sf::Vector2f pos, float angle, BULLET_ID id);
-	~Bullet();
+	virtual ~Bullet();
 	void MoveObject(sf::Vector2f pos);
 	void SetPosition(sf::Vector2f pos);
 	void SetScale(sf::Vector2f scale);
 	void SetRotation(float angle);
+	void SetHitbox(const sf::RectangleShape& hitbox);
 
 	void Update();
 
 	inline sf::Sprite* GetSprite() { return &mSprite; }
+	inline float GetRotation() { return mSprite.getRotation(); }
 	inline sf::Vector2f GetPosition() { return mPosition; }
 	inline int GetSpeed() { return MAX_SPEED; }
+	inline sf::FloatRect GetHitbox() const { return mHitbox.getGlobalBounds(); }
 	inline BULLET_ID GetID() { return mID; }
+
+	sf::RectangleShape mHitbox;
 private:
 	sf::Texture mTexture;
 	sf::Sprite mSprite;

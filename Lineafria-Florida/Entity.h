@@ -12,7 +12,7 @@
 class Entity: public sf::Sprite {
 public:
 	Entity();
-	~Entity();
+	virtual ~Entity();
 
 	virtual void MoveObject(sf::Vector2f pos) = 0;
 	virtual void SetPosition(sf::Vector2f pos) = 0;
@@ -20,7 +20,6 @@ public:
 	virtual void SetRotation(float angle) = 0;
 
 	virtual void Update() = 0;
-
 private:
 	sf::Texture mTexture;
 	sf::Sprite mSprite;

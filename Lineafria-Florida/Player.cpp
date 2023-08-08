@@ -17,6 +17,8 @@ Player::Player(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<sf::View> v
     mView = view;
     mPosition = std::make_shared<sf::Vector2f>(0.f, 0.f);
 
+    mCurrentAmmo = MAX_AMMO;
+
     sf::Vector2f playerPos;
     sf::Vector2f playerScale(1.0f, 1.0f);
     if (!mWindow.expired()) {
@@ -28,7 +30,7 @@ Player::Player(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<sf::View> v
     
     
     sf::FloatRect spriteSize = this->GetSprite()->getGlobalBounds();
-    this->GetSprite()->setOrigin(spriteSize.width * .5f, spriteSize.height * .5f);
+    this->GetSprite()->setOrigin((spriteSize.width * .5f) - 3.f, spriteSize.height * .5f);
     this->SetPosition(playerPos);
     this->SetScale(playerScale);
     this->SetHealth(MAX_HEALTH);
@@ -40,7 +42,9 @@ Player::Player(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<sf::View> v
     rect.setOutlineThickness(1.f);
     rect.setOutlineColor(sf::Color::Red);
     this->SetHitbox(rect);
-    //this->SetHitbox({ -spriteSize.width * .5f, -spriteSize.height * .5f, 14.f, spriteSize.height });
+}
+
+Player::~Player() {
 
 }
 
@@ -52,6 +56,7 @@ Player::Player(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<sf::View> v
 * @details:  Sin comentarios.
 *************************************/
 void Player::Update() {
+    MoveObject(mVelocity);
     if (!mWindow.expired()) {
         std::shared_ptr<sf::RenderWindow> windowPtr = mWindow.lock();
         sf::Vector2i pixelPos = sf::Mouse::getPosition(*windowPtr);
@@ -62,11 +67,7 @@ void Player::Update() {
             viewPtr->setCenter(*mPosition);
             windowPtr->setView(*viewPtr);
         }
-
-        
     }
-
-    mHitbox.setPosition(*mPosition);
     
     SetRotation(atan2f(mCursorPos.y - mPosition->y, mCursorPos.x - mPosition->x) * (180 / PI));
 }
@@ -79,8 +80,9 @@ void Player::Update() {
 * @details:  Sin comentarios.
 *************************************/
 void Player::MoveObject(sf::Vector2f pos) {
-	mSprite.move(pos);
-	*mPosition = mSprite.getPosition();
+	mHitbox.move(pos);
+    mSprite.move(pos);
+	*mPosition = mHitbox.getPosition();
 }
 
 /************************************
@@ -91,7 +93,8 @@ void Player::MoveObject(sf::Vector2f pos) {
 * @details:  Sin comentarios.
 *************************************/
 void Player::SetPosition(sf::Vector2f pos) {
-	mSprite.setPosition(pos);
+	mHitbox.setPosition(pos);
+    mSprite.setPosition(pos);
 	*mPosition = pos;
 }
 
@@ -168,33 +171,32 @@ void Player::TakeDamage(int damage) {
 * @brief:    Este método revisa si el jugador colisiona con un muro, y de ser así, lo detiene.
 * @details:  Sin comentarios.
 *************************************/
-void Player::CheckPlayerBounds(const sf::FloatRect& objectBounds) {
-    sf::FloatRect playerBounds = mHitbox.getGlobalBounds();
-    if (playerBounds.top < objectBounds.top
-        && playerBounds.top + playerBounds.height < objectBounds.top + objectBounds.height
-        && playerBounds.left < objectBounds.left + objectBounds.width
-        && playerBounds.left + playerBounds.width > objectBounds.left) {
+void Player::CheckPlayerBounds(const sf::FloatRect& playerBounds, const sf::FloatRect& wallBounds) {
+    if (playerBounds.top < wallBounds.top
+        && playerBounds.top + playerBounds.height < wallBounds.top + wallBounds.height
+        && playerBounds.left < wallBounds.left + wallBounds.width
+        && playerBounds.left + playerBounds.width > wallBounds.left) {
         mVelocity.y = 0;
-        this->SetPosition(sf::Vector2f(playerBounds.left, objectBounds.top - playerBounds.height));
-    } else if (playerBounds.top > objectBounds.top
-        && playerBounds.top + playerBounds.height > objectBounds.top + objectBounds.height
-        && playerBounds.left < objectBounds.left + objectBounds.width
-        && playerBounds.left + playerBounds.width > objectBounds.left) {
+        SetPosition(sf::Vector2f(playerBounds.left+8.f, wallBounds.top - playerBounds.height+8.f));
+    } else if (playerBounds.top > wallBounds.top
+        && playerBounds.top + playerBounds.height > wallBounds.top + wallBounds.height
+        && playerBounds.left < wallBounds.left + wallBounds.width
+        && playerBounds.left + playerBounds.width > wallBounds.left) {
         mVelocity.y = 0;
-        this->SetPosition(sf::Vector2f(playerBounds.left, objectBounds.top + objectBounds.height));
-    } else if (playerBounds.left < objectBounds.left
-        && playerBounds.left + playerBounds.width < objectBounds.left + objectBounds.width
-        && playerBounds.top < objectBounds.top + objectBounds.height
-        && playerBounds.top + playerBounds.height > objectBounds.top) {
+        SetPosition(sf::Vector2f(playerBounds.left+8.f, wallBounds.top + wallBounds.height+8.f));
+    } else if (playerBounds.left < wallBounds.left
+        && playerBounds.left + playerBounds.width < wallBounds.left + wallBounds.width
+        && playerBounds.top < wallBounds.top + wallBounds.height
+        && playerBounds.top + playerBounds.height > wallBounds.top) {
         mVelocity.x = 0;
-        this->SetPosition(sf::Vector2f(objectBounds.left - playerBounds.width, playerBounds.top));
+        SetPosition(sf::Vector2f(wallBounds.left - playerBounds.width+8.f, playerBounds.top+8.f));
     }
-    else if (playerBounds.left > objectBounds.left
-        && playerBounds.left + playerBounds.width > objectBounds.left + objectBounds.width
-        && playerBounds.top < objectBounds.top + objectBounds.height
-        && playerBounds.top + playerBounds.height > objectBounds.top) {
+    else if (playerBounds.left > wallBounds.left
+        && playerBounds.left + playerBounds.width > wallBounds.left + wallBounds.width
+        && playerBounds.top < wallBounds.top + wallBounds.height
+        && playerBounds.top + playerBounds.height > wallBounds.top) {
         mVelocity.x = 0;
-        this->SetPosition(sf::Vector2f(objectBounds.left + objectBounds.width, playerBounds.top));
+        SetPosition(sf::Vector2f(wallBounds.left + wallBounds.width+8.f, playerBounds.top+8.f));
     }
 }
 
@@ -208,4 +210,26 @@ void Player::CheckPlayerBounds(const sf::FloatRect& objectBounds) {
 void Player::ResetVelocity() {
     mVelocity.x = 0;
     mVelocity.y = 0;
+}
+
+void Player::ShootWeapon() {
+    mCurrentAmmo--;
+    if (mCurrentAmmo == 0) {
+        ReloadWeapon();
+    }
+}
+
+void Player::ReloadWeapon() {
+    std::cout << "Is reloading" << std::endl;
+    mReloading = true;
+    ResetReloadTimer();
+}
+
+void Player::SetAmmunition(const int& ammo) {
+    mReloading = false;
+    mCurrentAmmo = ammo;
+}
+
+void Player::ResetReloadTimer() {
+    mReloadTime.restart();
 }

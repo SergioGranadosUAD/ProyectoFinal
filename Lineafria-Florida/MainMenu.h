@@ -9,6 +9,7 @@ const int MAX_MENU_SIZE = 2;
 class MainMenu {
 public:
 	MainMenu(std::weak_ptr<Window> window, std::weak_ptr<sf::RenderWindow> renderWindow);
+	virtual ~MainMenu();
 
 	void HandleInput();
 	void Update();

@@ -1,5 +1,13 @@
 #include "TileMap.h"
 
+TileMap::TileMap() {
+
+}
+
+TileMap::~TileMap() {
+
+}
+
 bool TileMap::Load(const std::string& tileset, sf::Vector2u tileSize, const std::vector<int>& tiles, unsigned int width, unsigned int height) {
 	if (!mTileset.loadFromFile("Resources/" + tileset)) {
 		return false;

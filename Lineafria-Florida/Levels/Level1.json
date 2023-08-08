@@ -1,5 +1,6 @@
 {
   "Level1": {
+    "nextLevelName": "Level2",
     "spawnPosX": 810,
     "spawnPosY":170,
     "mapWidth": 19,
@@ -178,13 +179,13 @@
       {
         "width": 10,
         "height": 160,
-        "posX": -43,
+        "posX": -53,
         "posY": -96
       },
       {
         "width": 10,
         "height": 160,
-        "posX": 43,
+        "posX": 53,
         "posY": -96
       },
       {
@@ -211,6 +212,84 @@
         "posX": 80,
         "posY": -171
       }
-    ]
+    ],
+    "enemies": [
+      {
+        "posX": -32,
+        "posY": 0,
+        "enemyType": 0
+      },
+      {
+        "posX": 32,
+        "posY": 0,
+        "enemyType": 0
+      },
+      {
+        "posX": -176,
+        "posY": -256,
+        "enemyType": 1
+      },
+      {
+        "posX": 176,
+        "posY": -256,
+        "enemyType": 1
+      },
+      {
+        "posX": 0,
+        "posY": -256,
+        "enemyType": 1
+      },
+      {
+        "posX": 208,
+        "posY": -176,
+        "enemyType": 0
+      },
+      {
+        "posX": 208,
+        "posY": -112,
+        "enemyType": 0
+      },
+      {
+        "posX": -208,
+        "posY": -176,
+        "enemyType": 1
+      },
+      {
+        "posX": -208,
+        "posY": -112,
+        "enemyType": 1
+      },
+      {
+        "posX": 0,
+        "posY": -112,
+        "enemyType": 0
+      },
+      {
+        "posX": -176,
+        "posY": 32,
+        "enemyType": 0
+      },
+      {
+        "posX": 176,
+        "posY": 32,
+        "enemyType": 0
+      },
+      {
+        "posX": -240,
+        "posY": 96,
+        "enemyType": 0
+      },
+      {
+        "posX": 240,
+        "posY": 96,
+        "enemyType": 0
+      }
+    ],
+    "winZone": {
+      "width": 64,
+      "height": 64,
+      "posX": -112,
+      "posY": 208
+    }
   }
 }

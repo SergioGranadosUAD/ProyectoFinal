@@ -21,7 +21,7 @@ void MainMenu::SetupMenu() {
 		}
 
 		mMenuText[0].setFont(mFont);
-		mMenuText[0].setFillColor(sf::Color::White);
+		mMenuText[0].setFillColor(sf::Color::Red);
 		mMenuText[0].setString("Jugar");
 		mMenuText[0].setCharacterSize(50);
 		sf::FloatRect textRect = mMenuText[0].getLocalBounds();
@@ -36,9 +36,13 @@ void MainMenu::SetupMenu() {
 		mMenuText[1].setOrigin(textRect.left + textRect.width * .5f, textRect.top + textRect.height / .5f);
 		mMenuText[1].setPosition(windowPtr->getSize().x * .5f, 500);
 
-		mButtonPosSelected = -1;
+		mButtonPosSelected = 0;
 	}
 	
+}
+
+MainMenu::~MainMenu() {
+
 }
 
 void MainMenu::HandleInput() {
@@ -83,8 +87,6 @@ void MainMenu::Render() {
 		mWindow->Draw(mMenuText[i]);
 	}
 	mWindow->EndDraw();
-
-	
 }
 
 void MainMenu::MoveCursorUp() {

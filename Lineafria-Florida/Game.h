@@ -9,6 +9,7 @@
 #include "Enemy.h"
 #include "PauseMenu.h"
 #include "TileMap.h"
+#include "HUD.h"
 
 using nlohmann::json;
 
@@ -43,21 +44,25 @@ struct LevelData {
 *************************************/
 class Game {
 public:
-	Game(std::weak_ptr<Window> window, std::weak_ptr<float> elapsed);
-	~Game();
+	Game(std::weak_ptr<Window> window, std::weak_ptr<float> elapsed, const std::string& levelname);
+	virtual ~Game();
 
 	void HandleInput();
 	void Update();
 	void Render();
 	void RestartClock();
 	void CheckProjectileCollision();
-	void RestartGame();
+	void CheckPlayerCollisions(std::shared_ptr<sf::RectangleShape> wall);
+	void CheckEnemyCollisions(std::shared_ptr<Enemy> enemy, std::shared_ptr<sf::RectangleShape> wall);
+	void CheckEnemyOnEnemyCollisions(std::shared_ptr<Enemy> enemy1, std::shared_ptr<Enemy> enemy2);
+	void ChangeLevel(const std::string& levelName);
+	void ResetView();
 	LevelData LoadLevel(const std::string& levelName);
 
 	std::weak_ptr<float> GetElapsed();
 	std::weak_ptr<Window> GetWindow();
 
-	inline bool IsPaused() { return mIsPaused; }
+	inline bool GameFinished() const { return mGameFinished; }
 
 private:
 	std::shared_ptr<Window> mWindow;
@@ -67,14 +72,17 @@ private:
 	std::unique_ptr<PauseMenu> mPauseMenu;
 	std::unique_ptr<TileMap> mFloorLayer;
 	std::unique_ptr<TileMap> mWallLayer;
+	std::unique_ptr<HUD> mHud;
 	sf::Clock mClock;
 	std::shared_ptr<float> mElapsed;
 	AnimFlags animFlags;
 	std::vector<std::shared_ptr<Bullet>> projectiles;
 	std::vector<std::shared_ptr<Enemy>> enemies;
 	std::vector<std::shared_ptr<sf::RectangleShape>> mWallCollisions;
-	bool mIsPaused;
+	std::unique_ptr<sf::RectangleShape> mNextLevelZone;
 	bool mWinCondition;
+	bool mGameFinished;
 
-	std::vector<sf::RectangleShape> test;
+	std::string mCurrentLevelName;
+	std::string mNextLevelName;
 };

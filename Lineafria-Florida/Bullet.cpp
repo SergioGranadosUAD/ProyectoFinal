@@ -25,6 +25,14 @@ Bullet::Bullet(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<float> elap
 	this->SetRotation(angle);
 	mID = id;
 	std::cout << "Projectile created." << std::endl;
+
+	sf::RectangleShape rect{ sf::Vector2f(3.f, 3.f) };
+	rect.setOrigin(spriteSize.height * .5f, spriteSize.height * .5f);
+	rect.setPosition(mPosition.x+10.f,mPosition.y+6.5f);
+	rect.setFillColor(sf::Color::Transparent);
+	rect.setOutlineThickness(1.f);
+	rect.setOutlineColor(sf::Color::Red);
+	this->SetHitbox(rect);
 }
 
 Bullet::~Bullet() {
@@ -57,8 +65,9 @@ void Bullet::Update() {
 * @details:  Sin comentarios.
 *************************************/
 void Bullet::MoveObject(sf::Vector2f pos) {
+	mHitbox.move(pos);
 	mSprite.move(pos);
-	mPosition = mSprite.getPosition();
+	mPosition = mHitbox.getPosition();
 }
 
 /************************************
@@ -69,6 +78,7 @@ void Bullet::MoveObject(sf::Vector2f pos) {
 * @details:  Sin comentarios.
 *************************************/
 void Bullet::SetPosition(sf::Vector2f pos) {
+	mHitbox.setPosition(pos);
 	mSprite.setPosition(pos);
 	mPosition = pos;
 }
@@ -93,4 +103,15 @@ void Bullet::SetScale(sf::Vector2f scale) {
 *************************************/
 void Bullet::SetRotation(float angle) {
 	mSprite.setRotation(angle);
+}
+
+/************************************
+* @method:   SetHitbox
+* @access:   public
+* @return    void
+* @brief:    Este método establece los límites del hitbox de una entidad.
+* @details:  Sin comentarios.
+*************************************/
+void Bullet::SetHitbox(const sf::RectangleShape& hitbox) {
+	mHitbox = hitbox;
 }

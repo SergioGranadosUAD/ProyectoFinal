@@ -14,6 +14,7 @@ enum GAME_STATE {
 class Application {
 public:
 	Application();
+	~Application();
 	void HandleInput();
 	void Update();
 	void Render();

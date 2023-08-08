@@ -1,5 +1,4 @@
 #include "Enemy.h"
-#include <iostream>
 
 /************************************
 * @method:   Enemy
@@ -17,6 +16,7 @@ Enemy::Enemy(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<float> elapse
 	mWindow = window;
 	mElapsed = elapsed;
 	mPlayerPos = playerPos;
+	mHasBeenStartled = false;
 
 	sf::Vector2f enemyScale(1.0f, 1.0f);
 	sf::FloatRect spriteSize = this->GetSprite()->getGlobalBounds();
@@ -33,10 +33,17 @@ Enemy::Enemy(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<float> elapse
 		this->SetHealth(MAX_HEALTH_SHOOTER);
 	}
 
-	
+	sf::RectangleShape rect{ sf::Vector2f(spriteSize.height, spriteSize.height) };
+	rect.setOrigin(spriteSize.height * .5f, spriteSize.height * .5f);
+	rect.setPosition(pos);
+	rect.setFillColor(sf::Color::Transparent);
+	rect.setOutlineThickness(1.f);
+	rect.setOutlineColor(sf::Color::Red);
+	this->SetHitbox(rect);
+}
 
-	//Hitbox arbitraria, falta definir.
-	//mHitbox = sf::FloatRect(pos.x-11, pos.y-8, 15.f, 14.f);
+Enemy::~Enemy() {
+
 }
 
 /************************************
@@ -47,7 +54,7 @@ Enemy::Enemy(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<float> elapse
 * @details:  Sin comentarios.
 *************************************/
 void Enemy::Update() {
-
+	
 	switch (mType) {
 	case ENEMY_TYPE::CHASER:
 		ChasePlayer();
@@ -66,8 +73,9 @@ void Enemy::Update() {
 * @details:  Sin comentarios.
 *************************************/
 void Enemy::MoveObject(sf::Vector2f pos) {
+	mHitbox.move(pos);
 	mSprite.move(pos);
-	mPosition = mSprite.getPosition();
+	mPosition = mHitbox.getPosition();
 }
 
 /************************************
@@ -78,6 +86,7 @@ void Enemy::MoveObject(sf::Vector2f pos) {
 * @details:  Sin comentarios.
 *************************************/
 void Enemy::SetPosition(sf::Vector2f pos) {
+	mHitbox.setPosition(pos);
 	mSprite.setPosition(pos);
 	mPosition = pos;
 }
@@ -116,6 +125,17 @@ void Enemy::SetHealth(int hp) {
 }
 
 /************************************
+* @method:   SetHitbox
+* @access:   public
+* @return    void
+* @brief:    Este método establece los límites del hitbox de una entidad.
+* @details:  Sin comentarios.
+*************************************/
+void Enemy::SetHitbox(const sf::RectangleShape& hitbox) {
+	mHitbox = hitbox;
+}
+
+/************************************
 * @method:   GetSpeed
 * @access:   public
 * @return    int
@@ -129,6 +149,29 @@ int Enemy::GetSpeed() {
 	else if (mType == ENEMY_TYPE::SHOOTER) {
 		return MAX_SPEED_SHOOTER;
 	}
+}
+
+/************************************
+* @method:   AddVelocity
+* @access:   public
+* @return    void
+* @brief:    Este método establece la velocidad que tendrá la entidad en un frame.
+* @details:  Sin comentarios.
+*************************************/
+void Enemy::AddVelocity(const sf::Vector2f& vel) {
+	mVelocity += vel;
+}
+
+/************************************
+* @method:   ResetVelocity
+* @access:   public
+* @return    void
+* @brief:    Este método reinicia la velocidad de la entidad para que se vuelva a calcular el siguiente frame.
+* @details:  Sin comentarios.
+*************************************/
+void Enemy::ResetVelocity() {
+	mVelocity.x = 0;
+	mVelocity.y = 0;
 }
 
 /************************************
@@ -164,12 +207,17 @@ void Enemy::ChasePlayer() {
 	if (!mPlayerPos.expired() && !mElapsed.expired()) {
 		std::shared_ptr<sf::Vector2f> playerPosPtr = mPlayerPos.lock();
 		std::shared_ptr<float> elapsedPtr = mElapsed.lock();
-
-		this->SetRotation(atan2f(playerPosPtr->y - mPosition.y, playerPosPtr->x - mPosition.x) * (180 / PI));
-		sf::Vector2f direction;
-		direction.x = cos((PI / 180) * mSprite.getRotation()) * MAX_SPEED_CHASER * *elapsedPtr;
-		direction.y = sin((PI / 180) * mSprite.getRotation()) * MAX_SPEED_CHASER * *elapsedPtr;
-		this->MoveObject(direction);
+		if (GetPlayerDistance() < 150) {
+			mHasBeenStartled = true;
+		}
+		
+		if (mHasBeenStartled) {
+			this->SetRotation(atan2f(playerPosPtr->y - mPosition.y, playerPosPtr->x - mPosition.x) * (180 / PI));
+			sf::Vector2f direction;
+			direction.x = cos((PI / 180) * mSprite.getRotation()) * MAX_SPEED_CHASER * *elapsedPtr;
+			direction.y = sin((PI / 180) * mSprite.getRotation()) * MAX_SPEED_CHASER * *elapsedPtr;
+			this->AddVelocity(direction);
+		}
 	}
 	
 }
@@ -182,5 +230,61 @@ void Enemy::ChasePlayer() {
 * @details:  Sin comentarios.
 *************************************/
 void Enemy::ShootPlayer() {
+	if (!mPlayerPos.expired() && !mElapsed.expired()) {
+		std::shared_ptr<sf::Vector2f> playerPosPtr = mPlayerPos.lock();
+		std::shared_ptr<float> elapsedPtr = mElapsed.lock();
+		if (GetPlayerDistance() < 300) {
+			mHasBeenStartled = true;
+		}
 
+		if (mHasBeenStartled) {
+			this->SetRotation(atan2f(playerPosPtr->y - mPosition.y, playerPosPtr->x - mPosition.x) * (180 / PI));
+			if (GetPlayerDistance() < 100) {
+				sf::Vector2f direction;
+				direction.x = cos((PI / 180) * mSprite.getRotation()) * MAX_SPEED_SHOOTER * *elapsedPtr;
+				direction.y = sin((PI / 180) * mSprite.getRotation()) * MAX_SPEED_SHOOTER * *elapsedPtr;
+				this->AddVelocity(-direction);
+			}
+			
+		}
+	}
+}
+
+float Enemy::GetPlayerDistance() {
+	if (!mPlayerPos.expired()) {
+		std::shared_ptr<sf::Vector2f> playerPosPtr = mPlayerPos.lock();
+		return sqrt(pow(mPosition.x - playerPosPtr->x, 2) + pow(mPosition.y - playerPosPtr->y, 2));
+	}
+	
+}
+
+void Enemy::CheckEnemyBounds(const sf::FloatRect& playerBounds, const sf::FloatRect& wallBounds) {
+	if (playerBounds.top < wallBounds.top
+		&& playerBounds.top + playerBounds.height < wallBounds.top + wallBounds.height
+		&& playerBounds.left < wallBounds.left + wallBounds.width
+		&& playerBounds.left + playerBounds.width > wallBounds.left) {
+		mVelocity.y = 0;
+		SetPosition(sf::Vector2f(playerBounds.left + 9.f, wallBounds.top - playerBounds.height + 9.f));
+	}
+	else if (playerBounds.top > wallBounds.top
+		&& playerBounds.top + playerBounds.height > wallBounds.top + wallBounds.height
+		&& playerBounds.left < wallBounds.left + wallBounds.width
+		&& playerBounds.left + playerBounds.width > wallBounds.left) {
+		mVelocity.y = 0;
+		SetPosition(sf::Vector2f(playerBounds.left + 9.f, wallBounds.top + wallBounds.height + 9.f));
+	}
+	else if (playerBounds.left < wallBounds.left
+		&& playerBounds.left + playerBounds.width < wallBounds.left + wallBounds.width
+		&& playerBounds.top < wallBounds.top + wallBounds.height
+		&& playerBounds.top + playerBounds.height > wallBounds.top) {
+		mVelocity.x = 0;
+		SetPosition(sf::Vector2f(wallBounds.left - playerBounds.width + 9.f, playerBounds.top + 9.f));
+	}
+	else if (playerBounds.left > wallBounds.left
+		&& playerBounds.left + playerBounds.width > wallBounds.left + wallBounds.width
+		&& playerBounds.top < wallBounds.top + wallBounds.height
+		&& playerBounds.top + playerBounds.height > wallBounds.top) {
+		mVelocity.x = 0;
+		SetPosition(sf::Vector2f(wallBounds.left + wallBounds.width + 9.f, playerBounds.top + 9.f));
+	}
 }

@@ -57,6 +57,9 @@
     <ClCompile Include="TileMap.cpp">
       <Filter>Archivos de origen</Filter>
     </ClCompile>
+    <ClCompile Include="HUD.cpp">
+      <Filter>Archivos de origen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Game.h">
@@ -89,6 +92,9 @@
     <ClInclude Include="TileMap.h">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
+    <ClInclude Include="HUD.h">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\PlayerAim1.png">
@@ -107,6 +113,12 @@
       <Filter>Archivos de recursos\Sprites</Filter>
     </Image>
     <Image Include="Resources\TileSet.png">
+      <Filter>Archivos de recursos\Sprites</Filter>
+    </Image>
+    <Image Include="Resources\HudPistol.png">
+      <Filter>Archivos de recursos\Sprites</Filter>
+    </Image>
+    <Image Include="Resources\HudCrosshair.png">
       <Filter>Archivos de recursos\Sprites</Filter>
     </Image>
   </ItemGroup>

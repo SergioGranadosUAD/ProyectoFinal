@@ -13,7 +13,7 @@ class Window {
 public:
 	Window();
 	Window(const std::string& mTitle, const sf::Vector2u& mSize);
-	~Window();
+	virtual ~Window();
 
 	void BeginDraw();
 	void EndDraw();

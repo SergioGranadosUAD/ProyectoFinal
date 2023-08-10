@@ -6,6 +6,12 @@
 
 const int MAX_PAUSEMENU_SIZE = 2;
 
+/************************************
+* @class:    PauseMenu
+* @access:   public
+* @brief:    Esta clase se encarga de mostrar y actualizar el menú de pausa, permitiendo continuar con el juego o salir al menú principal.
+* @details:  Sin detalles.
+*************************************/
 class PauseMenu {
 public:
 	PauseMenu(std::weak_ptr<Window> window, std::weak_ptr<sf::RenderWindow> renderWindow);

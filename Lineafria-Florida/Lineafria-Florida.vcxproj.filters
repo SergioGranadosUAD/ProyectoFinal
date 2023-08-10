@@ -121,6 +121,15 @@
     <Image Include="Resources\HudCrosshair.png">
       <Filter>Archivos de recursos\Sprites</Filter>
     </Image>
+    <Image Include="Resources\HudCrosshairReload.png">
+      <Filter>Archivos de recursos\Sprites</Filter>
+    </Image>
+    <Image Include="Resources\MenuBG.jpg">
+      <Filter>Archivos de recursos\Sprites</Filter>
+    </Image>
+    <Image Include="Resources\GraphicDesignIsMyPassion.png">
+      <Filter>Archivos de recursos\Sprites</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Font Include="Font\Pixel.ttf">
@@ -129,6 +138,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Levels\Level1.json">
+      <Filter>Archivos de recursos\Levels</Filter>
+    </None>
+    <None Include="Levels\Level2.json">
+      <Filter>Archivos de recursos\Levels</Filter>
+    </None>
+    <None Include="Levels\Level3.json">
+      <Filter>Archivos de recursos\Levels</Filter>
+    </None>
+    <None Include="Levels\Level4.json">
       <Filter>Archivos de recursos\Levels</Filter>
     </None>
   </ItemGroup>

@@ -63,7 +63,7 @@ private:
 	sf::Vector2f mVelocity;
 	const int MAX_HEALTH_CHASER = 100;
 	const int MAX_SPEED_CHASER = 150;
-	const int MAX_HEALTH_SHOOTER = 60;
+	const int MAX_HEALTH_SHOOTER = 100;
 	const int MAX_SPEED_SHOOTER = 50;
 	
 	const double PI = 3.1416;

@@ -1,6 +1,13 @@
 #pragma once
 #include "Window.h"
 
+/************************************
+* @class:    TileMap
+* @access:   public
+* @brief:    Esta clase se encarga de cargar el tilemap y de dibujarlo.
+* @details:  El tilemap es un solo VertexArray el cual se divide entre el numero de tiles del mapa al cual se le asigna las coordenadas de texturas
+*			 correspondientes a cada tile. Esto lo hace menos demandante que tener un objeto para cada tile.
+*************************************/
 class TileMap : public sf::Drawable, public sf::Transformable {
 public:
 	TileMap();

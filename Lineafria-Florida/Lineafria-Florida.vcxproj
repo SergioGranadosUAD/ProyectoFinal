@@ -167,8 +167,11 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\EnemyAim.png" />
+    <Image Include="Resources\GraphicDesignIsMyPassion.png" />
     <Image Include="Resources\HudCrosshair.png" />
+    <Image Include="Resources\HudCrosshairReload.png" />
     <Image Include="Resources\HudPistol.png" />
+    <Image Include="Resources\MenuBG.jpg" />
     <Image Include="Resources\PlayerAim1.png" />
     <Image Include="Resources\PlayerAim2.png" />
     <Image Include="Resources\PlayerDeath.png" />
@@ -180,6 +183,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Levels\Level1.json" />
+    <None Include="Levels\Level2.json" />
+    <None Include="Levels\Level3.json" />
+    <None Include="Levels\Level4.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

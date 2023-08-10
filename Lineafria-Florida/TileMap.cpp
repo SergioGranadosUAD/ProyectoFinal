@@ -1,13 +1,35 @@
 #include "TileMap.h"
 
+/************************************
+* @method:   TileMap
+* @access:   public
+* @return:   void
+* @brief:    Constructor de la clase Tilemap. Vacío.
+* @details:  Sin comentarios.
+*************************************/
 TileMap::TileMap() {
 
 }
 
+/************************************
+* @method:   ~TileMap
+* @access:   public
+* @return:   void
+* @brief:    Destructor de la clase Tilemap. Vacío.
+* @details:  Sin comentarios.
+*************************************/
 TileMap::~TileMap() {
 
 }
 
+/************************************
+* @method:   Load
+* @access:   public
+* @return:   void
+* @brief:    Este método es el que se ocupa para cagar un Tilemap. Ocupando los parámetros de entrada crea un vertexArray con un número de
+*			 cuadrantes equivalentes al número de tiles del nivel, a los cuales aplica textura en base al valor recibido.
+* @details:  Sin comentarios.
+*************************************/
 bool TileMap::Load(const std::string& tileset, sf::Vector2u tileSize, const std::vector<int>& tiles, unsigned int width, unsigned int height) {
 	if (!mTileset.loadFromFile("Resources/" + tileset)) {
 		return false;
@@ -38,12 +60,26 @@ bool TileMap::Load(const std::string& tileset, sf::Vector2u tileSize, const std:
 	}
 }
 
+/************************************
+* @method:   draw
+* @access:   public
+* @return:   void
+* @brief:    Este método permite que se pueda mandar a llamar el método Draw de la RenderWindow sobre el objeto de TileMap.
+* @details:  Método heredado de la clase padre sf::Transformable
+*************************************/
 void TileMap::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	states.transform *= getTransform();
 	states.texture = &mTileset;
 	target.draw(mVertices, states);
 }
 
+/************************************
+* @method:   TileMap
+* @access:   public
+* @return:   sf::Vector2i
+* @brief:    Este método recibe el número de tile en base a los datos recibidos y le asigna la coordenada correspondiente a ese tile en la imagen del TileSet.
+* @details:  Sin comentarios.
+*************************************/
 sf::Vector2i TileMap::GetTexturePosition(int tileNumber) {
 	sf::Vector2i texturePos;
 	switch (tileNumber) {
@@ -131,11 +167,11 @@ sf::Vector2i TileMap::GetTexturePosition(int tileNumber) {
 		break;
 	case 19:
 		texturePos.x = 64;
-		texturePos.y = 352;
+		texturePos.y = 288;
 		break;
 	case 20:
 		texturePos.x = 96;
-		texturePos.y = 352;
+		texturePos.y = 288;
 		break;
 		//Red wall (W, E, N, S) rotations
 	case 21:
@@ -249,7 +285,7 @@ sf::Vector2i TileMap::GetTexturePosition(int tileNumber) {
 		texturePos.x = 144;
 		texturePos.y = 272;
 		break;
-		//Red wall corner (SE, SW, NE, NW)
+		//Red wall corner ends (SE, SW, NE, NW)
 	case 47:
 		texturePos.x = 0;
 		texturePos.y = 384;
@@ -266,7 +302,7 @@ sf::Vector2i TileMap::GetTexturePosition(int tileNumber) {
 		texturePos.x = 32;
 		texturePos.y = 416;
 		break;
-		//Gray wall corner (SE, SW, NE, NW)
+		//Gray wall corner ends (SE, SW, NE, NW)
 	case 51:
 		texturePos.x = 64;
 		texturePos.y = 384;

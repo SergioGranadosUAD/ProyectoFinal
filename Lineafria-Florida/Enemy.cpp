@@ -3,7 +3,7 @@
 /************************************
 * @method:   Enemy
 * @access:   public
-* @return    Constructor
+* @return:   void
 * @brief:    Constructor de la clase Enemy, carga su textura, se la asigna y establece sus valores iniciales.
 * @details:  Sin comentarios.
 *************************************/
@@ -42,6 +42,13 @@ Enemy::Enemy(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<float> elapse
 	this->SetHitbox(rect);
 }
 
+/************************************
+* @method:   Enemy
+* @access:   public
+* @return:   void
+* @brief:    Destructor de la clase Enemy.
+* @details:  Sin comentarios.
+*************************************/
 Enemy::~Enemy() {
 
 }
@@ -49,7 +56,7 @@ Enemy::~Enemy() {
 /************************************
 * @method:   Update
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Método que actualiza al enemigo cada frame. Dependiendo del tipo de enemigo que es, ejecuta un comportamiento diferente.
 * @details:  Sin comentarios.
 *************************************/
@@ -68,7 +75,7 @@ void Enemy::Update() {
 /************************************
 * @method:   MoveObject
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método mueve el objecto en una dirección específica, y actualiza el miembro de posición.
 * @details:  Sin comentarios.
 *************************************/
@@ -81,7 +88,7 @@ void Enemy::MoveObject(sf::Vector2f pos) {
 /************************************
 * @method:   SetPosition
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método establece la posición del objeto en un punto exacto, y actualiza el miembro de posición.
 * @details:  Sin comentarios.
 *************************************/
@@ -94,7 +101,7 @@ void Enemy::SetPosition(sf::Vector2f pos) {
 /************************************
 * @method:   SetScale
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método establece la escala del objeto.
 * @details:  Sin comentarios.
 *************************************/
@@ -105,7 +112,7 @@ void Enemy::SetScale(sf::Vector2f scale) {
 /************************************
 * @method:   SetRotation
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método establece la rotación del objeto.
 * @details:  Sin comentarios.
 *************************************/
@@ -116,7 +123,7 @@ void Enemy::SetRotation(float angle) {
 /************************************
 * @method:   SetHealth
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método establece la cantidad de vida que tendrá una entidad.
 * @details:  Sin comentarios.
 *************************************/
@@ -127,7 +134,7 @@ void Enemy::SetHealth(int hp) {
 /************************************
 * @method:   SetHitbox
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método establece los límites del hitbox de una entidad.
 * @details:  Sin comentarios.
 *************************************/
@@ -138,7 +145,7 @@ void Enemy::SetHitbox(const sf::RectangleShape& hitbox) {
 /************************************
 * @method:   GetSpeed
 * @access:   public
-* @return    int
+* @return:   int
 * @brief:    Este método regresa la velocidad del enemigo dependiendo su tipo.
 * @details:  Sin comentarios.
 *************************************/
@@ -154,7 +161,7 @@ int Enemy::GetSpeed() {
 /************************************
 * @method:   AddVelocity
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método establece la velocidad que tendrá la entidad en un frame.
 * @details:  Sin comentarios.
 *************************************/
@@ -165,7 +172,7 @@ void Enemy::AddVelocity(const sf::Vector2f& vel) {
 /************************************
 * @method:   ResetVelocity
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método reinicia la velocidad de la entidad para que se vuelva a calcular el siguiente frame.
 * @details:  Sin comentarios.
 *************************************/
@@ -177,7 +184,7 @@ void Enemy::ResetVelocity() {
 /************************************
 * @method:   TakeDamage
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método recibe un valor de daño y se lo resta a la vida de la entidad.
 * @details:  Sin comentarios.
 *************************************/
@@ -188,7 +195,7 @@ void Enemy::TakeDamage(int damage) {
 /************************************
 * @method:   RestartCooldown
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método reinicia el timer de enfriamiento que tiene el enemigo en sus ataques.
 * @details:  Sin comentarios.
 *************************************/
@@ -199,7 +206,7 @@ void Enemy::RestartCooldown() {
 /************************************
 * @method:   ChasePlayer
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Comportamiento específico de un tipo de enemigo. Persigue al jugador para intentar acercarse a él.
 * @details:  Sin comentarios.
 *************************************/
@@ -225,7 +232,7 @@ void Enemy::ChasePlayer() {
 /************************************
 * @method:   ShootPlayer
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Comportamiento específico de un tipo de enemigo. Le dispara al jugador desde lejos y trata de mantener su distancia.
 * @details:  Sin comentarios.
 *************************************/
@@ -233,7 +240,7 @@ void Enemy::ShootPlayer() {
 	if (!mPlayerPos.expired() && !mElapsed.expired()) {
 		std::shared_ptr<sf::Vector2f> playerPosPtr = mPlayerPos.lock();
 		std::shared_ptr<float> elapsedPtr = mElapsed.lock();
-		if (GetPlayerDistance() < 300) {
+		if (GetPlayerDistance() < 150) {
 			mHasBeenStartled = true;
 		}
 
@@ -250,6 +257,13 @@ void Enemy::ShootPlayer() {
 	}
 }
 
+/************************************
+* @method:   GetPlayerDistance
+* @access:   public
+* @return    float
+* @brief:    Este método ocupa la fórmula de distancia entre dos coordenadas para calcular la distancia entre el enemigo y el jugador.
+* @details:  Sin comentarios.
+*************************************/
 float Enemy::GetPlayerDistance() {
 	if (!mPlayerPos.expired()) {
 		std::shared_ptr<sf::Vector2f> playerPosPtr = mPlayerPos.lock();
@@ -258,33 +272,42 @@ float Enemy::GetPlayerDistance() {
 	
 }
 
+/************************************
+* @method:   CheckEnemyBounds
+* @access:   public
+* @return    void
+* @brief:    Este método verifica y le impide al enemigo traspasar las colisiones del objeto contra el que se compara.
+* @details:  Sin comentarios.
+*************************************/
 void Enemy::CheckEnemyBounds(const sf::FloatRect& playerBounds, const sf::FloatRect& wallBounds) {
+	//Cantidad de pixeles por la cual el origen de la entidad se encuentra desfasado de su límite.
+	float enemyOffset = 9.f;
 	if (playerBounds.top < wallBounds.top
 		&& playerBounds.top + playerBounds.height < wallBounds.top + wallBounds.height
 		&& playerBounds.left < wallBounds.left + wallBounds.width
 		&& playerBounds.left + playerBounds.width > wallBounds.left) {
 		mVelocity.y = 0;
-		SetPosition(sf::Vector2f(playerBounds.left + 9.f, wallBounds.top - playerBounds.height + 9.f));
+		SetPosition(sf::Vector2f(playerBounds.left + enemyOffset, wallBounds.top - playerBounds.height + enemyOffset));
 	}
 	else if (playerBounds.top > wallBounds.top
 		&& playerBounds.top + playerBounds.height > wallBounds.top + wallBounds.height
 		&& playerBounds.left < wallBounds.left + wallBounds.width
 		&& playerBounds.left + playerBounds.width > wallBounds.left) {
 		mVelocity.y = 0;
-		SetPosition(sf::Vector2f(playerBounds.left + 9.f, wallBounds.top + wallBounds.height + 9.f));
+		SetPosition(sf::Vector2f(playerBounds.left + enemyOffset, wallBounds.top + wallBounds.height + enemyOffset));
 	}
 	else if (playerBounds.left < wallBounds.left
 		&& playerBounds.left + playerBounds.width < wallBounds.left + wallBounds.width
 		&& playerBounds.top < wallBounds.top + wallBounds.height
 		&& playerBounds.top + playerBounds.height > wallBounds.top) {
 		mVelocity.x = 0;
-		SetPosition(sf::Vector2f(wallBounds.left - playerBounds.width + 9.f, playerBounds.top + 9.f));
+		SetPosition(sf::Vector2f(wallBounds.left - playerBounds.width + enemyOffset, playerBounds.top + enemyOffset));
 	}
 	else if (playerBounds.left > wallBounds.left
 		&& playerBounds.left + playerBounds.width > wallBounds.left + wallBounds.width
 		&& playerBounds.top < wallBounds.top + wallBounds.height
 		&& playerBounds.top + playerBounds.height > wallBounds.top) {
 		mVelocity.x = 0;
-		SetPosition(sf::Vector2f(wallBounds.left + wallBounds.width + 9.f, playerBounds.top + 9.f));
+		SetPosition(sf::Vector2f(wallBounds.left + wallBounds.width + enemyOffset, playerBounds.top + enemyOffset));
 	}
 }

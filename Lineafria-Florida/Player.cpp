@@ -3,7 +3,7 @@
 /************************************
 * @method:   Player
 * @access:   public
-* @return    Constructor
+* @return:   void
 * @brief:    Constructor de la clase Player, carga la textura y asigna los valores iniciales del jugador.
 * @details:  Sin comentarios.
 *************************************/
@@ -44,6 +44,13 @@ Player::Player(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<sf::View> v
     this->SetHitbox(rect);
 }
 
+/************************************
+* @method:   Player
+* @access:   public
+* @return:   void
+* @brief:    Destructor de la clase Player.
+* @details:  Sin comentarios.
+*************************************/
 Player::~Player() {
 
 }
@@ -51,7 +58,7 @@ Player::~Player() {
 /************************************
 * @method:   Update
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método actualiza el jugador cada frame, encargándose de rotar al jugador dependiendo del cursor.
 * @details:  Sin comentarios.
 *************************************/
@@ -75,7 +82,7 @@ void Player::Update() {
 /************************************
 * @method:   MoveObject
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método mueve el objecto en una dirección específica, y actualiza el miembro de posición.
 * @details:  Sin comentarios.
 *************************************/
@@ -88,7 +95,7 @@ void Player::MoveObject(sf::Vector2f pos) {
 /************************************
 * @method:   SetPosition
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método establece la posición del objeto en un punto exacto, y actualiza el miembro de posición.
 * @details:  Sin comentarios.
 *************************************/
@@ -101,7 +108,7 @@ void Player::SetPosition(sf::Vector2f pos) {
 /************************************
 * @method:   SetScale
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método establece la escala del objeto.
 * @details:  Sin comentarios.
 *************************************/
@@ -112,7 +119,7 @@ void Player::SetScale(sf::Vector2f scale) {
 /************************************
 * @method:   SetRotation
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método establece la rotación del objeto.
 * @details:  Sin comentarios.
 *************************************/
@@ -123,7 +130,7 @@ void Player::SetRotation(float angle) {
 /************************************
 * @method:   SetHealth
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método establece la cantidad de vida que tendrá una entidad.
 * @details:  Sin comentarios.
 *************************************/
@@ -134,7 +141,7 @@ void Player::SetHealth(int hp) {
 /************************************
 * @method:   SetHitbox
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método establece los límites del hitbox de una entidad.
 * @details:  Sin comentarios.
 *************************************/
@@ -145,7 +152,7 @@ void Player::SetHitbox(const sf::RectangleShape& hitbox) {
 /************************************
 * @method:   AddVelocity
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método establece la velocidad que tendrá la entidad en un frame.
 * @details:  Sin comentarios.
 *************************************/
@@ -156,7 +163,7 @@ void Player::AddVelocity(const sf::Vector2f& vel) {
 /************************************
 * @method:   TakeDamage
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método recibe un valor de daño y se lo resta a la vida de la entidad.
 * @details:  Sin comentarios.
 *************************************/
@@ -167,7 +174,7 @@ void Player::TakeDamage(int damage) {
 /************************************
 * @method:   CheckPlayerBounds
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método revisa si el jugador colisiona con un muro, y de ser así, lo detiene.
 * @details:  Sin comentarios.
 *************************************/
@@ -203,7 +210,7 @@ void Player::CheckPlayerBounds(const sf::FloatRect& playerBounds, const sf::Floa
 /************************************
 * @method:   ResetVelocity
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método reinicia la velocidad de la entidad para que se vuelva a calcular el siguiente frame.
 * @details:  Sin comentarios.
 *************************************/
@@ -212,6 +219,13 @@ void Player::ResetVelocity() {
     mVelocity.y = 0;
 }
 
+/************************************
+* @method:   ShootWeapon
+* @access:   public
+* @return:   void
+* @brief:    Este método le resta una bala al contador de munición, e indica que se debe de recargar si se llega a cero.
+* @details:  Sin comentarios.
+*************************************/
 void Player::ShootWeapon() {
     mCurrentAmmo--;
     if (mCurrentAmmo == 0) {
@@ -219,17 +233,41 @@ void Player::ShootWeapon() {
     }
 }
 
+/************************************
+* @method:   ReloadWeapon
+* @access:   public
+* @return:   void
+* @brief:    Este método empieza el timer para recargar el arma, el cual está establecido a 2 segundos.
+* @details:  Sin comentarios.
+*************************************/
 void Player::ReloadWeapon() {
     std::cout << "Is reloading" << std::endl;
+    if (mCurrentAmmo != 0) {
+        mCurrentAmmo = 0;
+    }
     mReloading = true;
     ResetReloadTimer();
 }
 
+/************************************
+* @method:   SetAmmunition
+* @access:   public
+* @return:   void
+* @brief:    Este método establece el nuevo valor del contador de munición.
+* @details:  Sin comentarios.
+*************************************/
 void Player::SetAmmunition(const int& ammo) {
     mReloading = false;
     mCurrentAmmo = ammo;
 }
 
+/************************************
+* @method:   ResetReloadTimer
+* @access:   public
+* @return:   void
+* @brief:    Este método reinicia el timer una vez que se empieza la recarga de un arma.
+* @details:  Sin comentarios.
+*************************************/
 void Player::ResetReloadTimer() {
     mReloadTime.restart();
 }

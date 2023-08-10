@@ -1,5 +1,12 @@
 #include "Application.h"
 
+/************************************
+* @class:    Application
+* @access:   public
+* @return    void
+* @brief:    Constructor de la clase Application. Carga los elementos para que el menú principal funcione adecuadamente.
+* @details:  Sin detalles.
+*************************************/
 Application::Application():
 	mWindow(std::make_shared<Window>("Curvafria Florida", sf::Vector2u(1360, 768))), mElapsed(std::make_shared<float>(0)), mState(GAME_STATE::MENU), mGame(nullptr) {
 	mRenderWindow = mWindow->GetMWindow();
@@ -12,10 +19,24 @@ Application::Application():
 	mMainMenu = std::make_unique<MainMenu>(mWindow, mRenderWindow);
 }
 
+/************************************
+* @class:    ~Application
+* @access:   public
+* @return    void
+* @brief:    Destructor de la clase Application.
+* @details:  Sin detalles.
+*************************************/
 Application::~Application() {
 
 }
 
+/************************************
+* @class:    HandleInput
+* @access:   public
+* @return    void
+* @brief:    Esta función se encarga de redirigir el control de entrada del usuario dependiendo el estado actual de la aplicación.
+* @details:  Sin detalles.
+*************************************/
 void Application::HandleInput() {
 	switch (mState) {
 	case GAME_STATE::MENU:
@@ -26,6 +47,13 @@ void Application::HandleInput() {
 	}
 }
 
+/************************************
+* @class:    Update
+* @access:   public
+* @return    void
+* @brief:    Esta función se encarga de actualizar la aplicación dependiendo de su estado.
+* @details:  Cada frame revsia si se cumple cierta condición para cambiar entre el menú principal y el juego en sí.
+*************************************/
 void Application::Update() {
 	switch (mState) {
 	case GAME_STATE::MENU:
@@ -46,6 +74,14 @@ void Application::Update() {
 		}
 	}
 }
+
+/************************************
+* @class:    Render
+* @access:   public
+* @return    void
+* @brief:    Esta función se encarga de actualizar la aplicación dependiendo de su estado.
+* @details:  Cada frame revsia si se cumple cierta condición para cambiar entre el menú principal y el juego en sí.
+*************************************/
 void Application::Render() {
 	switch(mState){
 	case GAME_STATE::MENU:
@@ -60,7 +96,7 @@ void Application::Render() {
 /************************************
 * @method:   GetElapsed
 * @access:   public
-* @return    weak_ptr<float>
+* @return:    weak_ptr<float>
 * @brief:    Este método devuelve el tiempo transcurrido desde el último reinicio del reloj.
 * @details:  Sin detalles.
 *************************************/
@@ -71,7 +107,7 @@ std::weak_ptr<float> Application::GetElapsed() {
 /************************************
 * @method:   GetWindow
 * @access:   public
-* @return    weak_ptr<Window>
+* @return:   weak_ptr<Window>
 * @brief:    Este método devuelve un puntero a la ventana para que pueda ser ocupada.
 * @details:  Sin detalles.
 *************************************/

@@ -3,7 +3,7 @@
 /************************************
 * @method:   Game
 * @access:   public
-* @return    Constructor
+* @return:   void
 * @brief:    Constructor de la clase Game, establece los valores que llevará el juego y crea los elementos necesarios para su funcionamiento.
 * @details:  Sin detalles.
 *************************************/
@@ -46,8 +46,17 @@ Game::Game(std::weak_ptr<Window> window, std::weak_ptr<float> elapsed, const std
     mWallLayer->setPosition(sf::Vector2f(level.spawnPos));
     mWallLayer->setOrigin(sf::Vector2f(level.width * 16, level.height * 16));
 
+    mFirstUpdate = false;
+    RestartClock();
 };
 
+/************************************
+* @method:   ~Game
+* @access:   public
+* @return:	 void
+* @brief:    Destructor de Game.
+* @details:  Sin detalles.
+*************************************/
 Game::~Game(){
 
 }
@@ -55,12 +64,13 @@ Game::~Game(){
 /************************************
 * @method:   HandleInput
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método se encarga de procesar la entrada por parte del usuario.
 * @details:  Presenta varios casos para diversas teclas oprimidas por el usuario.
 *************************************/
 void Game::HandleInput(){
-    if (mPauseMenu->GameResumed()) {
+    //Pequeño check para deshabilitar la entrada por parte del usuario hasta que se lleve a cabo el primer update.
+    if (mPauseMenu->GameResumed() && mFirstUpdate) {
         sf::Event event;
         //Procesa las diferentes teclas introducidas por el jugador.
         if (!mRenderWindow.expired()) {
@@ -96,6 +106,11 @@ void Game::HandleInput(){
                         mPauseMenu->CenterElements(mView->getCenter());
                         mPauseMenu->PauseGame();
                     default:
+                    case sf::Keyboard::R:
+                        if (!mPlayer->IsReloading() && mPlayer->GetCurrentAmmo() != mPlayer->GetMaxAmmo()) {
+                            mPlayer->ReloadWeapon();
+                            mHud->SetAmmunition(0);
+                        }
                         break;
                     }
                 }
@@ -154,11 +169,18 @@ void Game::HandleInput(){
 /************************************
 * @method:   Update
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Método que actualiza el juego de forma constante, así como todos los elementos que requieran actualizarse.
 * @details:  Sin detalles.
 *************************************/
 void Game::Update() {
+    //Pequeño check que deshabilita la entrada por parte del usuario hasta que se lleve a cabo el primer update. Esto evita la acumulación
+    //de velocidad al iniciar el juego.
+    if (!mFirstUpdate) {
+        mFirstUpdate = true;
+    }
+
+    //Si el juego no se encuentra pausado, ejecuta de forma usual.
     if (mPauseMenu->GameResumed()) {
         //Primero se revisan las colisiones del jugador, después se hace su update
         for (const auto& wall : mWallCollisions) {
@@ -197,7 +219,7 @@ void Game::Update() {
             //Ataque cuerpo a cuerpo hacia el jugador.
             if (enemy->GetHitbox().intersects(mPlayer->GetHitbox()) && enemy->GetCooldownTime() > 1000) {
                 std::cout << "Melee attack on player." << std::endl;
-                mPlayer.get()->TakeDamage(20);
+                mPlayer.get()->TakeDamage(100);
                 enemy->RestartCooldown();
             }
             if (enemy->HasBeenStartled() && enemy->GetType() == ENEMY_TYPE::SHOOTER && enemy->GetCooldownTime() > 2000) {
@@ -215,10 +237,17 @@ void Game::Update() {
             ChangeLevel(mCurrentLevelName);
         }
         if (mWinCondition && mPlayer->GetHitbox().intersects(mNextLevelZone->getGlobalBounds())) {
-            ChangeLevel(mNextLevelName);
+            if (mNextLevelName != "null") {
+                std::cout << "next Level: " << mNextLevelName << std::endl;
+                ChangeLevel(mNextLevelName);
+            }
+            else {
+                mGameFinished = true;
+            }
         }
     }
     else {
+        //Si el juego se encuentra pausado, ejecuta el menú de pausa y deja de actualizar el juego.
         mPauseMenu->Update();
         if (mPauseMenu->GameFinished()) {
             mGameFinished = true;
@@ -230,7 +259,7 @@ void Game::Update() {
 /************************************
 * @method:   Render
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método dibuja todas las entidades en la ventana.
 * @details:  Sin detalles.
 *************************************/
@@ -240,21 +269,21 @@ void Game::Render() {
     mWindow->Draw(*mWallLayer);
 	mWindow->Draw(*mPlayer->GetSprite());
 
-    mWindow->Draw(mPlayer->mHitbox);
+    //mWindow->Draw(mPlayer->mHitbox);
 
     for (auto& bullet : projectiles) {
         mWindow->Draw(*bullet.get()->GetSprite());
-        mWindow->Draw(bullet->mHitbox);
+        //mWindow->Draw(bullet->mHitbox);
     }
     for (auto& enemy : enemies) {
         mWindow->Draw(*enemy.get()->GetSprite());
-        mWindow->Draw(enemy->mHitbox);
+        //mWindow->Draw(enemy->mHitbox);
     }
 
-    //Activar para probar posiciones de muros.
-    for (auto& coll : mWallCollisions) {
+    //Activar para dibujar las posiciones de la colisión de los muros.
+    /*for (auto& coll : mWallCollisions) {
         mWindow->Draw(*coll);
-    }
+    }*/
 
     if (mWinCondition) {
         mWindow->Draw(*mNextLevelZone);
@@ -262,6 +291,7 @@ void Game::Render() {
 
     mHud->Render();
 
+    //Si el juego se encuentra pausado, muestra el menú de pausa encima del resto de elementos.
     if (!mPauseMenu->GameResumed()) {
         mPauseMenu->Render();
     }
@@ -272,7 +302,7 @@ void Game::Render() {
 /************************************
 * @method:   RestartClock
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método reinicia el reloj y le asigna el tiempo que ha pasado desde el último reinicio a la variable mElapsed.
 * @details:  Sin detalles.
 *************************************/
@@ -283,7 +313,7 @@ void Game::RestartClock() {
 /************************************
 * @method:   GetElapsed
 * @access:   public
-* @return    weak_ptr<float>
+* @return:   weak_ptr<float>
 * @brief:    Este método devuelve el tiempo transcurrido desde el último reinicio del reloj.
 * @details:  Sin detalles.
 *************************************/
@@ -294,7 +324,7 @@ std::weak_ptr<float> Game::GetElapsed() {
 /************************************
 * @method:   GetWindow
 * @access:   public
-* @return    weak_ptr<Window>
+* @return:   weak_ptr<Window>
 * @brief:    Este método devuelve un puntero a la ventana para que pueda ser ocupada.
 * @details:  Sin detalles.
 *************************************/
@@ -304,25 +334,31 @@ std::weak_ptr<Window> Game::GetWindow() {
 }
 
 /************************************
-* @method:   RestartGame
+* @method:   ChangeLevel
 * @access:   public
-* @return    void
-* @brief:    Este método reinicia el nivel a su estado inicial, para que se pueda volver a jugar.
+* @return:   void
+* @brief:    Este método reinicia todos los estados del juego y los vuelve a cagar con la información del nivel introducido.
 * @details:  Sin detalles.
 *************************************/
 void Game::ChangeLevel(const std::string& levelname) {
     mPlayer.reset();
     mFloorLayer.reset();
     mWallLayer.reset();
-    mPlayer = std::make_unique<Player>(mRenderWindow, mView);
-    mFloorLayer = std::make_unique<TileMap>();
-    mWallLayer = std::make_unique<TileMap>();
+    mHud.reset();
     mClock.restart();
     *mElapsed = 0.f;
     animFlags = {};
     projectiles.clear();
     enemies.clear();
     mWallCollisions.clear();
+
+    mFirstUpdate = false;
+    mWinCondition = false;
+
+    mPlayer = std::make_unique<Player>(mRenderWindow, mView);
+    mHud = std::make_unique<HUD>(mWindow, mRenderWindow, mView, mPlayer->GetMaxAmmo());
+    mFloorLayer = std::make_unique<TileMap>();
+    mWallLayer = std::make_unique<TileMap>();
 
     LevelData level = LoadLevel(levelname);
 
@@ -343,13 +379,13 @@ void Game::ChangeLevel(const std::string& levelname) {
 /************************************
 * @method:   CheckProjectileCollision
 * @access:   public
-* @return    void
+* @return:   void
 * @brief:    Este método revisa si los proyectiles colisionan con jugador o un enemigo, y realiza los comportamientos apropiados.
 * @details:  Sin detalles.
 *************************************/
 void Game::CheckProjectileCollision() {
 
-    sf::FloatRect viewRect(mView->getCenter() - mView->getSize() / 2.f, mView->getSize());
+    sf::FloatRect viewRect(mView->getCenter() - mView->getSize(), mView->getSize() * 2.f);
 
     //Iteración de proyectiles.
     for (int i = 0; i < projectiles.size(); ++i) {
@@ -362,7 +398,7 @@ void Game::CheckProjectileCollision() {
             //Se comprueba si un proyectil es enemigo y colisiona con el jugador.
             if (projectiles[i]->GetHitbox().intersects(mPlayer->GetHitbox()) && projectiles[i]->GetID() == BULLET_ID::ENEMY) {
                 projectiles.erase(projectiles.begin() + i);
-                mPlayer.get()->TakeDamage(20);
+                mPlayer.get()->TakeDamage(100);
                 break;
             }
 
@@ -372,7 +408,7 @@ void Game::CheckProjectileCollision() {
             for (int k = 0; k < enemies.size(); ++k) {
                 if (projectiles[i]->GetHitbox().intersects(enemies[k]->GetHitbox()) && projectiles[i].get()->GetID() == BULLET_ID::ALLIED) {
                     projectiles.erase(projectiles.begin() + i);
-                    enemies[k].get()->TakeDamage(20);
+                    enemies[k].get()->TakeDamage(100);
                     if (enemies[k].get()->GetHealth() <= 0) {
                         enemies.erase(enemies.begin() + k);
                         std::cout << "Enemy defeated" << std::endl;
@@ -402,6 +438,13 @@ void Game::CheckProjectileCollision() {
     }
 }
 
+/************************************
+* @method:   CheckPlayerCollisions
+* @access:   public
+* @return:   void
+* @brief:    Este método calcula la posición del jugador en el siguiente frame y determina si este colisiona con un muro. De ser así, llama al método apropiado.
+* @details:  Sin detalles.
+*************************************/
 void Game::CheckPlayerCollisions(std::shared_ptr<sf::RectangleShape> wall) {
     sf::FloatRect playerBounds = mPlayer->GetHitbox();
     sf::FloatRect wallBounds = wall->getGlobalBounds();
@@ -416,6 +459,13 @@ void Game::CheckPlayerCollisions(std::shared_ptr<sf::RectangleShape> wall) {
     }
 }
 
+/************************************
+* @method:   CheckEnemyCollisions
+* @access:   public
+* @return:   void
+* @brief:    Este método calcula la posición del enemigo en el siguiente frame y determina si este colisiona con un muro. De ser así, llama al método apropiado.
+* @details:  Sin detalles.
+*************************************/
 void Game::CheckEnemyCollisions(std::shared_ptr<Enemy> enemy, std::shared_ptr<sf::RectangleShape> wall) {
     sf::FloatRect enemyBounds = enemy->GetHitbox();
     sf::FloatRect wallBounds = wall->getGlobalBounds();
@@ -430,6 +480,13 @@ void Game::CheckEnemyCollisions(std::shared_ptr<Enemy> enemy, std::shared_ptr<sf
     }
 }
 
+/************************************
+* @method:   CheckEnemyOnEnemyCollisions
+* @access:   public
+* @return:   void
+* @brief:    Este método calcula la posición de un enemigo en el siguiente frame y determina si este colisiona con un otro enemigo. De ser así, llama al método apropiado.
+* @details:  Sin detalles.
+*************************************/
 void Game::CheckEnemyOnEnemyCollisions(std::shared_ptr<Enemy> enemy1, std::shared_ptr<Enemy> enemy2) {
     sf::FloatRect firstEnemyBounds = enemy1->GetHitbox();
     sf::FloatRect secondEnemyBounds = enemy2->GetHitbox();
@@ -444,7 +501,16 @@ void Game::CheckEnemyOnEnemyCollisions(std::shared_ptr<Enemy> enemy1, std::share
     }
 }
 
-LevelData Game::LoadLevel(const std::string& levelName) {
+/************************************
+* @method:   LoadLevel
+* @access:   public
+* @return:   LevelData
+* @brief:    Este método lee la información del nivel almacenada en un archivo .json y la carga al juego.
+* @details:  Regresa la información necesaria para cargar los tilemaps.
+*************************************/
+LevelData Game::LoadLevel(const std::string levelName) {
+    std::cout << "level Name passed to LoadLevel: " << levelName << std::endl;
+
     try {
         LevelData levelData;
         json data;
@@ -503,6 +569,8 @@ LevelData Game::LoadLevel(const std::string& levelName) {
         mNextLevelZone->setOutlineThickness(1.0f);
         mNextLevelZone->setPosition(winZonePosition);
 
+        mCurrentLevelName = levelName;
+
         return levelData;
     }
     catch (json::type_error& e) {
@@ -511,6 +579,13 @@ LevelData Game::LoadLevel(const std::string& levelName) {
     
 }
 
+/************************************
+* @method:   ResetView
+* @access:   public
+* @return:   void
+* @brief:    Este método reinicia el view a su valor inicial antes de realizar el cambio de pantalla al menú principal.
+* @details:  Sin detalles.
+*************************************/
 void Game::ResetView() {
     if (!mRenderWindow.expired()) {
         std::shared_ptr<sf::RenderWindow> windowPtr = mRenderWindow.lock();

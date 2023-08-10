@@ -1,0 +1,32 @@
+{
+  "Level4": {
+    "nextLevelName": "null",
+    "spawnPosX": null,
+    "spawnPosY": null,
+    "mapWidth": null,
+    "mapHeight": null,
+    "floorLayer": [],
+    "wallLayer": [],
+    "hitboxes": [
+      {
+        "width": null,
+        "height": null,
+        "posX": null,
+        "posY": null
+      }
+    ],
+    "enemies": [
+      {
+        "posX": null,
+        "posY": null,
+        "enemyType": null
+      }
+    ],
+    "winZone": {
+      "width": null,
+      "height": null,
+      "posX": null,
+      "posY": null
+    }
+  }
+}

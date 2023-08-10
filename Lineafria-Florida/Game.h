@@ -26,6 +26,12 @@ struct AnimFlags {
 	bool rightPressed = false;
 };
 
+/************************************
+* @class:    LevelData
+* @access:   public
+* @brief:    Este struct almacena la información del nivel para que este pueda ser construído.
+* @details:  Se guarda la información de dos capas de tilemap, una para el piso y otra para los muros.
+*************************************/
 struct LevelData {
 	sf::Vector2f spawnPos;
 	int width = 0;
@@ -57,7 +63,7 @@ public:
 	void CheckEnemyOnEnemyCollisions(std::shared_ptr<Enemy> enemy1, std::shared_ptr<Enemy> enemy2);
 	void ChangeLevel(const std::string& levelName);
 	void ResetView();
-	LevelData LoadLevel(const std::string& levelName);
+	LevelData LoadLevel(const std::string levelName);
 
 	std::weak_ptr<float> GetElapsed();
 	std::weak_ptr<Window> GetWindow();
@@ -82,6 +88,8 @@ private:
 	std::unique_ptr<sf::RectangleShape> mNextLevelZone;
 	bool mWinCondition;
 	bool mGameFinished;
+
+	bool mFirstUpdate;
 
 	std::string mCurrentLevelName;
 	std::string mNextLevelName;

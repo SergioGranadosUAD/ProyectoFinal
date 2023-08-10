@@ -4,7 +4,7 @@
 /************************************
 * @method:   Bullet
 * @access:   public
-* @return    Constructor
+* @return    void
 * @brief:    Constructor de la clase Bullet, carga la textura de esta y le asigna los valores iniciales.
 * @details:  Sin comentarios.
 *************************************/
@@ -35,6 +35,13 @@ Bullet::Bullet(std::weak_ptr<sf::RenderWindow> window, std::weak_ptr<float> elap
 	this->SetHitbox(rect);
 }
 
+/************************************
+* @method:   ~Bullet
+* @access:   public
+* @return    void
+* @brief:    Destructor de la clase Bullet.
+* @details:  Sin comentarios.
+*************************************/
 Bullet::~Bullet() {
 	std::cout << "Projectile destroyed." << std::endl;
 }
